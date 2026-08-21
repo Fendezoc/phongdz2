@@ -1,0 +1,603 @@
+-- // LOAD FLUENT UI & ADDONS
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+-- // CẤU HÌNH & TRẠNG THÁI TOÀN CỤC
+getgenv().AutoFarm = false
+getgenv().FastAttack = false
+getgenv().BringMob = false
+getgenv().AutoHaki = true
+getgenv().SelectWeapon = "Melee"
+
+-- Boss & Sea Events
+getgenv().AutoBoss = false
+getgenv().SelectBoss = ""
+getgenv().FarmCake = false
+getgenv().RipIndraKill = false
+getgenv().Hallow = false
+getgenv().FarmDaiBan = false
+getgenv().Autoterrorshark = false
+getgenv().KillShark = false
+getgenv().KillPiranha = false
+getgenv().KillFishCrew = false
+
+-- ESPs
+getgenv().ESPPlayer = false
+getgenv().ChestESP = false
+getgenv().DevilFruitESP = false
+getgenv().FlowerESP = false
+getgenv().IslandESP = false
+getgenv().BerryESP = false
+
+-- Misc & Combat
+getgenv().AimbotGun = false
+getgenv().AutoBuyHaki = false
+getgenv().AutoAdminHop = false
+
+-- // SERVICES
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local CollectionService = game:GetService("CollectionService")
+
+local LocalPlayer = Players.LocalPlayer
+local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+local NetModule = require(ReplicatedStorage.Modules.Net)
+
+-- // XÁC ĐỊNH SEA
+local PlaceId = game.PlaceId
+local World1 = PlaceId == 2753915549 or PlaceId == 85211729168715
+local World2 = PlaceId == 4442272183 or PlaceId == 79091703265657
+local World3 = PlaceId == 7449423635 or PlaceId == 100117331123089
+
+-- // ANTI-AFK & NOCLIP
+LocalPlayer.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
+    task.wait(1)
+    VirtualUser:Button2Up(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
+end)
+
+RunService.Stepped:Connect(function()
+    if (getgenv().AutoFarm or getgenv().AutoBoss or getgenv().FarmCake or getgenv().RipIndraKill) and LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- // DI CHUYỂN & TRANG BỊ
+local CurrentTween = nil
+local function StopTween()
+    if CurrentTween then
+        pcall(function() CurrentTween:Cancel() end)
+        CurrentTween = nil
+    end
+end
+
+local function topos(targetCFrame)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChild("Humanoid")
+    if not hrp or not hum or hum.Health <= 0 then return end
+
+    local dist = (hrp.Position - targetCFrame.Position).Magnitude
+    local speed = 300
+    local tweenDuration = dist / speed
+
+    StopTween()
+    CurrentTween = TweenService:Create(hrp, TweenInfo.new(tweenDuration, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
+    CurrentTween:Play()
+end
+
+local function CheckAndEquipHaki()
+    if not getgenv().AutoHaki then return end
+    local char = LocalPlayer.Character
+    if char and not char:FindFirstChild("HasBuso") then
+        pcall(function() CommF:InvokeServer("Buso") end)
+    end
+end
+
+local function EquipWeapon(weaponType)
+    local bp = LocalPlayer.Backpack
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("Humanoid") then return end
+
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool and (tool.ToolTip == weaponType or (weaponType == "Fruit" and tool.ToolTip == "Blox Fruit")) then
+        return
+    end
+
+    for _, item in ipairs(bp:GetChildren()) do
+        if item:IsA("Tool") then
+            if (weaponType == "Melee" and item.ToolTip == "Melee")
+            or (weaponType == "Sword" and item.ToolTip == "Sword")
+            or (weaponType == "Gun" and item.ToolTip == "Gun")
+            or (weaponType == "Fruit" and item.ToolTip == "Blox Fruit") then
+                char.Humanoid:EquipTool(item)
+                break
+            end
+        end
+    end
+end
+
+-- // SERVER HOPPING
+local function ServerHop()
+    local servers = {}
+    local req = game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
+    local data = HttpService:JSONDecode(req)
+    for _, server in ipairs(data.data) do
+        if server.playing < server.maxPlayers and server.id ~= game.JobId then
+            table.insert(servers, server.id)
+        end
+    end
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+    else
+        TeleportService:Teleport(PlaceId, LocalPlayer)
+    end
+end
+
+-- ========================================================
+-- // MODULE FAST ATTACK
+-- ========================================================
+local RemoteAttack = nil
+local RemoteId = nil
+
+for _, folder in ipairs({ReplicatedStorage.Util, ReplicatedStorage.Common, ReplicatedStorage.Remotes, ReplicatedStorage.Assets, ReplicatedStorage.FX}) do
+    for _, child in ipairs(folder:GetChildren()) do
+        if child:IsA("RemoteEvent") and child:GetAttribute("Id") then
+            RemoteAttack = child
+            RemoteId = child:GetAttribute("Id")
+            break
+        end
+    end
+    if RemoteAttack then break end
+end
+
+task.spawn(function()
+    while task.wait(0.001) do
+        if getgenv().FastAttack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local myHRP = LocalPlayer.Character.HumanoidRootPart
+            local validTargets = {}
+
+            for _, folder in ipairs({Workspace.Enemies, Workspace.Characters}) do
+                for _, entity in ipairs(folder:GetChildren()) do
+                    if entity ~= LocalPlayer.Character then
+                        local hrp = entity:FindFirstChild("HumanoidRootPart")
+                        local hum = entity:FindFirstChild("Humanoid")
+                        if hrp and hum and hum.Health > 0 and (hrp.Position - myHRP.Position).Magnitude <= 60 then
+                            for _, part in ipairs(entity:GetChildren()) do
+                                if part:IsA("BasePart") and (hrp.Position - myHRP.Position).Magnitude <= 60 then
+                                    table.insert(validTargets, {entity, part})
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+            if #validTargets > 0 and tool and (tool:GetAttribute("WeaponType") == "Melee" or tool:GetAttribute("WeaponType") == "Sword") then
+                pcall(function()
+                    NetModule:RemoteEvent("RegisterHit", true)
+                    ReplicatedStorage.Modules.Net["RE/RegisterAttack"]:FireServer()
+
+                    local head = validTargets[1][1]:FindFirstChild("Head")
+                    if head and RemoteAttack then
+                        ReplicatedStorage.Modules.Net["RE/RegisterHit"]:FireServer(
+                            head,
+                            validTargets,
+                            {},
+                            tostring(LocalPlayer.UserId):sub(2, 4) .. tostring(coroutine.running()):sub(11, 15)
+                        )
+                        cloneref(RemoteAttack):FireServer(
+                            string.gsub("RE/RegisterHit", ".", function(char)
+                                return string.char(bit32.bxor(string.byte(char), math.floor(Workspace:GetServerTimeNow() / 10 % 10) + 1))
+                            end),
+                            bit32.bxor(RemoteId + 909090, ReplicatedStorage.Modules.Net.seed:InvokeServer() * 2),
+                            head,
+                            validTargets
+                        )
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- ========================================================
+-- // MODULE ESP & VISUALS
+-- ========================================================
+local function CreateBillboard(adornee, name, text, color, offset)
+    if adornee:FindFirstChild(name) then return adornee[name] end
+    local gui = Instance.new("BillboardGui")
+    gui.Name = name
+    gui.Adornee = adornee
+    gui.Size = UDim2.new(0, 200, 0, 40)
+    gui.StudsOffset = offset or Vector3.new(0, 2.5, 0)
+    gui.AlwaysOnTop = true
+    gui.Parent = adornee
+
+    local label = Instance.new("TextLabel")
+    label.Name = "TextLabel"
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.TextColor3 = color or Color3.fromRGB(255, 255, 255)
+    label.TextStrokeTransparency = 0.5
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.Text = text or ""
+    label.Parent = gui
+    return gui
+end
+
+task.spawn(function()
+    while task.wait(1) do
+        -- Player ESP
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = player.Character.HumanoidRootPart
+                if getgenv().ESPPlayer then
+                    local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
+                    local esp = CreateBillboard(hrp, "PlayerESP", player.Name .. " [" .. dist .. "m]", Color3.fromRGB(0, 255, 120))
+                    esp.TextLabel.Text = player.Name .. " [" .. dist .. "m]\nHP: " .. math.floor(player.Character.Humanoid.Health)
+                elseif hrp:FindFirstChild("PlayerESP") then
+                    hrp.PlayerESP:Destroy()
+                end
+            end
+        end
+
+        -- Chest ESP
+        for _, chest in ipairs(CollectionService:GetTagged("_ChestTagged")) do
+            if getgenv().ChestESP and not chest:GetAttribute("IsDisabled") then
+                local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - chest:GetPivot().Position).Magnitude)
+                local esp = CreateBillboard(chest, "ChestESP", "Chest [" .. dist .. "m]", Color3.fromRGB(255, 215, 0))
+                esp.TextLabel.Text = "Chest\n" .. dist .. "m"
+            elseif chest:FindFirstChild("ChestESP") then
+                chest.ChestESP:Destroy()
+            end
+        end
+
+        -- Fruit ESP
+        for _, obj in ipairs(Workspace:GetChildren()) do
+            if obj:IsA("Tool") and string.find(obj.Name, "Fruit") and obj:FindFirstChild("Handle") then
+                if getgenv().DevilFruitESP then
+                    local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - obj.Handle.Position).Magnitude)
+                    local esp = CreateBillboard(obj.Handle, "FruitESP", obj.Name .. " [" .. dist .. "m]", Color3.fromRGB(255, 50, 50))
+                    esp.TextLabel.Text = obj.Name .. "\n" .. dist .. "m"
+                elseif obj.Handle:FindFirstChild("FruitESP") then
+                    obj.Handle.FruitESP:Destroy()
+                end
+            end
+        end
+
+        -- Flower ESP
+        for _, obj in ipairs(Workspace:GetChildren()) do
+            if (obj.Name == "Flower1" or obj.Name == "Flower2") and obj:IsA("BasePart") then
+                if getgenv().FlowerESP then
+                    local color = obj.Name == "Flower1" and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(255, 50, 50)
+                    local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - obj.Position).Magnitude)
+                    local esp = CreateBillboard(obj, "FlowerESP", obj.Name .. " [" .. dist .. "m]", color)
+                    esp.TextLabel.Text = obj.Name .. "\n" .. dist .. "m"
+                elseif obj:FindFirstChild("FlowerESP") then
+                    obj.FlowerESP:Destroy()
+                end
+            end
+        end
+
+        -- Island ESP
+        pcall(function()
+            for _, loc in ipairs(Workspace._WorldOrigin.Locations:GetChildren()) do
+                if loc.Name ~= "Sea" then
+                    if getgenv().IslandESP then
+                        local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - loc.Position).Magnitude)
+                        local esp = CreateBillboard(loc, "IslandESP", loc.Name .. " [" .. dist .. "m]", Color3.fromRGB(80, 245, 245))
+                        esp.TextLabel.Text = loc.Name .. "\n" .. dist .. "m"
+                    elseif loc:FindFirstChild("IslandESP") then
+                        loc.IslandESP:Destroy()
+                    end
+                end
+            end
+        end)
+
+        -- Berry ESP
+        for _, bush in ipairs(CollectionService:GetTagged("BerryBush")) do
+            if getgenv().BerryESP and bush.Parent then
+                local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - bush.Parent:GetPivot().Position).Magnitude)
+                local esp = CreateBillboard(bush.Parent, "BerryESP", "Berry [" .. dist .. "m]", Color3.fromRGB(255, 255, 0))
+                esp.TextLabel.Text = "Berry\n" .. dist .. "m"
+            elseif bush.Parent and bush.Parent:FindFirstChild("BerryESP") then
+                bush.Parent.BerryESP:Destroy()
+            end
+        end
+    end
+end)
+
+-- ========================================================
+-- // MODULE SEA EVENTS & BOSSES
+-- ========================================================
+task.spawn(function()
+    while task.wait(0.2) do
+        pcall(function()
+            -- Auto Boss Selected
+            if getgenv().AutoBoss and getgenv().SelectBoss ~= "" then
+                local b = Workspace.Enemies:FindFirstChild(getgenv().SelectBoss)
+                if b and b:FindFirstChild("Humanoid") and b.Humanoid.Health > 0 and b:FindFirstChild("HumanoidRootPart") then
+                    repeat
+                        task.wait()
+                        CheckAndEquipHaki()
+                        EquipWeapon(getgenv().SelectWeapon)
+                        topos(b.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0))
+                        VirtualUser:CaptureController()
+                        VirtualUser:Button1Down(Vector2.new(1280, 672))
+                    until not getgenv().AutoBoss or b.Humanoid.Health <= 0 or not b.Parent
+                end
+            end
+
+            -- Katakuri / Dough King
+            if getgenv().FarmCake then
+                local boss = Workspace.Enemies:FindFirstChild("Cake Prince") or Workspace.Enemies:FindFirstChild("Dough King")
+                if boss and boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0 then
+                    repeat
+                        task.wait()
+                        CheckAndEquipHaki()
+                        EquipWeapon(getgenv().SelectWeapon)
+                        topos(boss.HumanoidRootPart.CFrame * CFrame.new(0, 35, 0))
+                        VirtualUser:CaptureController()
+                        VirtualUser:Button1Down(Vector2.new(1280, 672))
+                    until not getgenv().FarmCake or boss.Humanoid.Health <= 0
+                end
+            end
+
+            -- Rip Indra
+            if getgenv().RipIndraKill then
+                local indra = Workspace.Enemies:FindFirstChild("rip_indra True Form") or Workspace.Enemies:FindFirstChild("rip_indra")
+                if indra and indra:FindFirstChild("Humanoid") and indra.Humanoid.Health > 0 then
+                    repeat
+                        task.wait()
+                        CheckAndEquipHaki()
+                        EquipWeapon(getgenv().SelectWeapon)
+                        topos(indra.HumanoidRootPart.CFrame * CFrame.new(0, -40, 0))
+                        VirtualUser:CaptureController()
+                        VirtualUser:Button1Down(Vector2.new(1280, 672))
+                    until not getgenv().RipIndraKill or indra.Humanoid.Health <= 0
+                end
+            end
+
+            -- Sea Events (Terrorshark / Shark / Piranha / Fish Crew)
+            if getgenv().Autoterrorshark or getgenv().KillShark or getgenv().KillPiranha or getgenv().KillFishCrew then
+                for _, seaMob in ipairs(Workspace.Enemies:GetChildren()) do
+                    if (getgenv().Autoterrorshark and seaMob.Name == "Terrorshark")
+                    or (getgenv().KillShark and seaMob.Name == "Shark")
+                    or (getgenv().KillPiranha and seaMob.Name == "Piranha")
+                    or (getgenv().KillFishCrew and seaMob.Name == "Fish Crew Member") then
+                        if seaMob:FindFirstChild("Humanoid") and seaMob.Humanoid.Health > 0 and seaMob:FindFirstChild("HumanoidRootPart") then
+                            repeat
+                                task.wait()
+                                CheckAndEquipHaki()
+                                EquipWeapon(getgenv().SelectWeapon)
+                                topos(seaMob.HumanoidRootPart.CFrame * CFrame.new(0, 45, 0))
+                                VirtualUser:CaptureController()
+                                VirtualUser:Button1Down(Vector2.new(1280, 672))
+                            until seaMob.Humanoid.Health <= 0 or not seaMob.Parent
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- ========================================================
+-- // MODULE AUTO REJOIN & ADMIN DETECTOR
+-- ========================================================
+local Admins = {
+    red_game43 = true, rip_indra = true, Axiore = true, wenlocktoad = true,
+    Daigrock = true, Uzoth = true, Azarth = true, Death_King = true
+}
+
+task.spawn(function()
+    while task.wait(2) do
+        if getgenv().AutoAdminHop then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if Admins[p.Name] then
+                    ServerHop()
+                    break
+                end
+            end
+        end
+    end
+end)
+
+-- ========================================================
+-- // KHỞI TẠO GIAO DIỆN FLUENT
+-- ========================================================
+local Window = Fluent:CreateWindow({
+    Title = "Blox Fruits Hub",
+    SubTitle = "All-In-One Fluent Version",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(600, 480),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.RightControl
+})
+
+local Tabs = {
+    Farm = Window:AddTab({ Title = "Auto Farm", Icon = "swords" }),
+    Bosses = Window:AddTab({ Title = "Bosses & Sea", Icon = "skull" }),
+    Visuals = Window:AddTab({ Title = "ESP & Visuals", Icon = "eye" }),
+    Combat = Window:AddTab({ Title = "Combat & Misc", Icon = "crosshair" }),
+    Shop = Window:AddTab({ Title = "Shop & Styles", Icon = "shopping-cart" }),
+    Settings = Window:AddTab({ Title = "Cài đặt", Icon = "settings" })
+}
+
+-- TAB: AUTO FARM
+Tabs.Farm:AddToggle("AutoFarmToggle", {
+    Title = "Auto Farm Level",
+    Default = false,
+    Callback = function(v) getgenv().AutoFarm = v if not v then StopTween() end end
+})
+
+Tabs.Farm:AddToggle("FastAttackToggle", {
+    Title = "Fast Attack",
+    Default = false,
+    Callback = function(v) getgenv().FastAttack = v end
+})
+
+Tabs.Farm:AddToggle("BringMobToggle", {
+    Title = "Bring Mob (Gom quái)",
+    Default = false,
+    Callback = function(v) getgenv().BringMob = v end
+})
+
+Tabs.Farm:AddToggle("AutoHakiToggle", {
+    Title = "Auto Bật Buso Haki",
+    Default = true,
+    Callback = function(v) getgenv().AutoHaki = v end
+})
+
+Tabs.Farm:AddDropdown("WeaponDropdown", {
+    Title = "Chọn loại vũ khí",
+    Values = {"Melee", "Sword", "Fruit", "Gun"},
+    Multi = false,
+    Default = "Melee",
+    Callback = function(v) getgenv().SelectWeapon = v end
+})
+
+-- TAB: BOSSES & SEA EVENTS
+local BossList = {"The Gorilla King", "Bobby", "Vice Admiral", "Ice Admiral", "Diamond", "Jeremy", "Fajita", "Don Swan", "Smoke Admiral", "Darkbeard", "Cake Prince", "Dough King", "rip_indra True Form", "Soul Reaper", "Tyrant of the Skies"}
+Tabs.Bosses:AddDropdown("BossSelect", {
+    Title = "Chọn Boss",
+    Values = BossList,
+    Default = BossList[1],
+    Callback = function(v) getgenv().SelectBoss = v end
+})
+
+Tabs.Bosses:AddToggle("BossKillToggle", {
+    Title = "Auto Kill Boss Đã Chọn",
+    Default = false,
+    Callback = function(v) getgenv().AutoBoss = v end
+})
+
+Tabs.Bosses:AddToggle("KatakuriToggle", {
+    Title = "Auto Katakuri / Dough King",
+    Default = false,
+    Callback = function(v) getgenv().FarmCake = v end
+})
+
+Tabs.Bosses:AddToggle("IndraToggle", {
+    Title = "Auto Kill Rip Indra",
+    Default = false,
+    Callback = function(v) getgenv().RipIndraKill = v end
+})
+
+Tabs.Bosses:AddToggle("TerrorToggle", {
+    Title = "Auto Kill Terrorshark",
+    Default = false,
+    Callback = function(v) getgenv().Autoterrorshark = v end
+})
+
+Tabs.Bosses:AddToggle("SharkToggle", {
+    Title = "Auto Kill Shark & Piranha",
+    Default = false,
+    Callback = function(v) getgenv().KillShark = v getgenv().KillPiranha = v end
+})
+
+-- TAB: ESP & VISUALS
+Tabs.Visuals:AddToggle("ESPPlayerToggle", {
+    Title = "ESP Người chơi",
+    Default = false,
+    Callback = function(v) getgenv().ESPPlayer = v end
+})
+
+Tabs.Visuals:AddToggle("ESPChestToggle", {
+    Title = "ESP Rương (Chest)",
+    Default = false,
+    Callback = function(v) getgenv().ChestESP = v end
+})
+
+Tabs.Visuals:AddToggle("ESPFruitToggle", {
+    Title = "ESP Trái Ác Quỷ",
+    Default = false,
+    Callback = function(v) getgenv().DevilFruitESP = v end
+})
+
+Tabs.Visuals:AddToggle("ESPFlowerToggle", {
+    Title = "ESP Hoa (Flower V2)",
+    Default = false,
+    Callback = function(v) getgenv().FlowerESP = v end
+})
+
+Tabs.Visuals:AddToggle("ESPIslandToggle", {
+    Title = "ESP Các Đảo (Mirage/Kitsune)",
+    Default = false,
+    Callback = function(v) getgenv().IslandESP = v end
+})
+
+Tabs.Visuals:AddToggle("ESPBerryToggle", {
+    Title = "ESP Rơm quả (Berry)",
+    Default = false,
+    Callback = function(v) getgenv().BerryESP = v end
+})
+
+-- TAB: COMBAT & MISC
+Tabs.Combat:AddToggle("AdminHopToggle", {
+    Title = "Auto Hop Khi Gặp Admin",
+    Default = false,
+    Callback = function(v) getgenv().AutoAdminHop = v end
+})
+
+Tabs.Combat:AddButton({
+    Title = "Server Hop Ngay Lập Tức",
+    Callback = function() ServerHop() end
+})
+
+Tabs.Combat:AddButton({
+    Title = "Rejoin Server Hiện Tại",
+    Callback = function() TeleportService:Teleport(PlaceId, LocalPlayer) end
+})
+
+-- TAB: SHOP & FIGHTING STYLES
+local StyleList = {"BuyBlackLeg", "BuyElectro", "BuyFishmanKarate", "BuySuperhuman", "BuyDeathStep", "BuySharkmanKarate", "BuyElectricClaw", "BuyDragonTalon", "BuyGodhuman", "BuySanguineArt"}
+for _, style in ipairs(StyleList) do
+    Tabs.Shop:AddButton({
+        Title = "Mua " .. style:gsub("Buy", ""),
+        Callback = function() pcall(function() CommF:InvokeServer(style) end) end
+    })
+end
+
+Tabs.Shop:AddButton({
+    Title = "Mua Haki Geppo ($10,000)",
+    Callback = function() CommF:InvokeServer("BuyHaki", "Geppo") end
+})
+
+Tabs.Shop:AddButton({
+    Title = "Mua Haki Soru ($25,000)",
+    Callback = function() CommF:InvokeServer("BuyHaki", "Soru") end
+})
+
+-- SAVE & CONFIG
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentHubBloxFruits")
+SaveManager:SetFolder("FluentHubBloxFruits/configs")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Phong Dz Hub",
+    Content = "Toàn bộ tính năng ESP, Bosses, Sea Events & Combat đã sẵn sàng!",
+    Duration = 5
+})
