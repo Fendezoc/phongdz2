@@ -36,11 +36,13 @@ end
 
 JoinTeam()
 
-hookfunction(require(game:GetService("ReplicatedStorage").Effect.Container.Death), function()
-    -- empty block
-end)
-hookfunction(require(game:GetService("ReplicatedStorage").Effect.Container.Respawn), function()
-    -- empty block
+pcall(function()
+    hookfunction(require(game:GetService("ReplicatedStorage").Effect.Container.Death), function()
+        -- empty block
+    end)
+    hookfunction(require(game:GetService("ReplicatedStorage").Effect.Container.Respawn), function()
+        -- empty block
+    end)
 end)
 if game.PlaceId == 2753915549 or game.PlaceId == 85211729168715 then
     World1 = true
@@ -3820,16 +3822,6 @@ Tabs.Discord:AddButton({    Title = "Minimize UI",
     end
 })
 
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
-InterfaceManager:SetFolder("BOMBHub")
-SaveManager:SetFolder("BOMBHub")
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
-SaveManager:LoadAutoloadConfig()
-
 _G.SelectWeapon = "Melee"
 task.spawn(function()
     while task.wait() do
@@ -3837,9 +3829,9 @@ task.spawn(function()
             if _G.SelectWeapon ~= "Melee" then
                 if _G.SelectWeapon ~= "Sword" then
                     if _G.SelectWeapon == "Gun" then
-                        for _, Tabs.Status in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                            if Tabs.Status.ToolTip == "Gun" then
-                                _G.SelectWeapon = Tabs.Status.Name
+                        for _, item in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                            if item.ToolTip == "Gun" then
+                                _G.SelectWeapon = item.Name
                             end
                         end
                     elseif _G.SelectWeapon == "Fruit" or _G.SelectWeapon == "Blox Fruit" then
@@ -3866,7 +3858,7 @@ task.spawn(function()
         end)
     end
 end)
-local _ = Tabs.Farm:AddDropdown({    Title = "Select Tool",
+local _ = Tabs.Farm:AddDropdown("Farm_SelectTool_Dropdown", {    Title = "Select Tool",
     Description = "Choose the tool you want to use",
     Values = {"Melee", "Sword", "Gun", "Blox Fruit"},
     Default = "Melee",
@@ -3876,7 +3868,7 @@ local _ = Tabs.Farm:AddDropdown({    Title = "Select Tool",
     end
 })
 
-Tabs.Farm:AddDropdown({    Title = "UI Scale",
+Tabs.Farm:AddDropdown("Farm_UIScale_Dropdown", {    Title = "UI Scale",
     Description = "Adjust the user interface size",
     Values = {
         "Small",
@@ -4025,7 +4017,7 @@ local function CheckQuestNew()
         CFrameMonNew = CFrame.new(10965.1025, -2158.8842, 9177.2597)
     end
 end
-Tabs.Farm:AddToggle({    Title = "Auto Farm Level",
+Tabs.Farm:AddToggle("Farm_AutoFarmLevel_Toggle", {    Title = "Auto Farm Level",
     Description = "Farm Level",
     Default = false,
     Callback = function(state)
@@ -4183,7 +4175,7 @@ spawn(function()
     end
 end)
 if World3 then
-Tabs.Farm:AddToggle({    Title = "Auto Pirates Sea",
+Tabs.Farm:AddToggle("Farm_AutoPiratesSea_Toggle", {    Title = "Auto Pirates Sea",
     Description = "Farm Raid Pirate",
     Default = false,
     Callback = function(v543)
@@ -4224,7 +4216,7 @@ spawn(function()
 end)
 end
 if World2 then
-    Tabs.Farm:AddToggle({        Title = "Auto Factory",
+    Tabs.Farm:AddToggle("Farm_AutoFactory_Toggle", {        Title = "Auto Factory",
         Description = "Spawns Every 1:30 [hours, Minutes]",
         Default = false,
         Callback = function(v732)
@@ -4257,7 +4249,7 @@ if World2 then
         end
     end)
  end
-Tabs.Farm:AddToggle({    Title = "Auto Farm Nearest",
+Tabs.Farm:AddToggle("Farm_AutoFarmNearest_Toggle", {    Title = "Auto Farm Nearest",
     Description = "Auto Farm Nearest Mobs",
     Default = false,
     Callback = function(v520)
@@ -4299,7 +4291,7 @@ local CommF = Remotes:WaitForChild("CommF_")
 
 _G.AutoValentineGacha = false
 
-Tabs.Farm:AddToggle({    Title = "Auto Valentine Random",
+Tabs.Farm:AddToggle("Farm_AutoValentineRandom_Toggle", {    Title = "Auto Valentine Random",
     Description = "Auto Gacha Valentine Roll",
     Default = false,
     Callback = function(Value)
@@ -4348,7 +4340,7 @@ Tabs.Farm:AddButton({    Title = "Get Quest Elite Players",
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("PlayerHunter")
     end
 })
-Tabs.Farm:AddToggle({    Title = "Auto Kill Player Quest",
+Tabs.Farm:AddToggle("Farm_AutoKillPlayerQuest_Toggle", {    Title = "Auto Kill Player Quest",
     Description = "",
     Default = false,
     Callback = function(v1127)
@@ -4401,7 +4393,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Safe Mode",
+Tabs.Farm:AddToggle("Farm_AutoSafeMode_Toggle", {    Title = "Auto Safe Mode",
     Description = "",
     Default = false,
     Callback = function(v1130)
@@ -4442,7 +4434,7 @@ task.spawn(function()
         end)
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Farm Tyrant",
+Tabs.Farm:AddToggle("Farm_AutoFarmTyrant_Toggle", {    Title = "Auto Farm Tyrant",
     Description = "",
     Default = false,
     Callback = function(v553)
@@ -4543,7 +4535,7 @@ task.spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Summon Tyrant Of The Skies",
+Tabs.Farm:AddToggle("Farm_SummonTyrantOfTheSkies_Toggle", {    Title = "Summon Tyrant Of The Skies",
     Description = "",
     Default = false,
     Callback = function(v564)
@@ -4681,7 +4673,7 @@ task.spawn(function()
         end)
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Farm Bones",
+Tabs.Farm:AddToggle("Farm_AutoFarmBones_Toggle", {    Title = "Auto Farm Bones",
     Description = "",
     Default = false,
     Callback = function(v591)
@@ -4753,7 +4745,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Kill Soul Reaper",
+Tabs.Farm:AddToggle("Farm_AutoKillSoulReaper_Toggle", {    Title = "Auto Kill Soul Reaper",
     Description = "",
     Default = false,
     Callback = function(v599)
@@ -4795,7 +4787,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Trade Bones",
+Tabs.Farm:AddToggle("Farm_AutoTradeBones_Toggle", {    Title = "Auto Trade Bones",
     Description = "",
     Default = false,
     Callback = function(v602)
@@ -4810,7 +4802,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Pray",
+Tabs.Farm:AddToggle("Farm_AutoPray_Toggle", {    Title = "Auto Pray",
     Description = "",
     Default = false,
     Callback = function(v603)
@@ -4829,7 +4821,7 @@ spawn(function()
         end
     end)
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Try Luck",
+Tabs.Farm:AddToggle("Farm_AutoTryLuck_Toggle", {    Title = "Auto Try Luck",
     Description = "",
     Default = false,
     Callback = function(v604)
@@ -4868,7 +4860,7 @@ task.spawn(function()
         end)
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Farm Katakuri",
+Tabs.Farm:AddToggle("Farm_FarmKatakuri_Toggle", {    Title = "Farm Katakuri",
     Description = "",
     Default = false,
     Callback = function(v608)
@@ -4971,7 +4963,7 @@ task.spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Farm Katakuri V2",
+Tabs.Farm:AddToggle("Farm_FarmKatakuriV2_Toggle", {    Title = "Farm Katakuri V2",
     Description = "",
     Default = false,
     Callback = function(v619)
@@ -5084,7 +5076,7 @@ spawn(function()
 end)
 local _ = Tabs.Farm:AddSection("Auto Farm Chest And Berry")
 
-Tabs.Farm:AddToggle({    Title = "Auto Collect Berry",
+Tabs.Farm:AddToggle("Farm_AutoCollectBerry_Toggle", {    Title = "Auto Collect Berry",
     Description = "",
     Default = false,
     Callback = function(v628)
@@ -5131,7 +5123,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Farm:AddToggle({    Title = "Auto Farm Chest [ Tween ]",
+Tabs.Farm:AddToggle("Farm_AutoFarmChestTween_Toggle", {    Title = "Auto Farm Chest [ Tween ]",
     Description = "",
     Default = false,
     Callback = function(v644)
@@ -5166,7 +5158,7 @@ spawn(function()
 end)
 local ChestBypass = false
 
-Tabs.Farm:AddToggle({    Title = "Auto Farm Chest [ Bypass ]",
+Tabs.Farm:AddToggle("Farm_AutoFarmChestBypass_Toggle", {    Title = "Auto Farm Chest [ Bypass ]",
     Default = false,
     Callback = function(v)
         ChestBypass = v
@@ -5277,7 +5269,7 @@ else
         "Tide Keeper"
     }
 end
-Tabs.Farm:AddDropdown({    Title = "Boss List",
+Tabs.Farm:AddDropdown("Farm_BossList_Dropdown", {    Title = "Boss List",
     Description = "",
     Values = v658,
     Default = v658[1],
@@ -5285,7 +5277,7 @@ Tabs.Farm:AddDropdown({    Title = "Boss List",
         _G.SelectBoss = v659
     end
 })
-Tabs.Farm:AddToggle({    Title = "Auto Kill Boss Selected",
+Tabs.Farm:AddToggle("Farm_AutoKillBossSelected_Toggle", {    Title = "Auto Kill Boss Selected",
     Description = "",
     Default = false,
     Callback = function(v660)
@@ -5408,7 +5400,7 @@ function getConfigMaterial(v665)
         MaterialPos = CFrame.new(-507.78, 73, -126.45)
     end
 end
-Tabs.Farm:AddDropdown({    Title = "Material List",
+Tabs.Farm:AddDropdown("Farm_MaterialList_Dropdown", {    Title = "Material List",
     Description = "",
     Values = v664,
     Default = v664[1],
@@ -5416,7 +5408,7 @@ Tabs.Farm:AddDropdown({    Title = "Material List",
         _G.SelectMaterial = v666
     end
 })
-Tabs.Farm:AddToggle({    Title = "Auto Farm Material",
+Tabs.Farm:AddToggle("Farm_AutoFarmMaterial_Toggle", {    Title = "Auto Farm Material",
     Description = "",
     Default = false,
     Callback = function(v667)
@@ -5457,7 +5449,7 @@ task.spawn(function()
 end)
 
 local _ = Tabs.AutoFishing:AddSection("Auto Fishing")
-Tabs.AutoFishing:AddToggle({    Title = "Auto Fishing",
+Tabs.AutoFishing:AddToggle("AutoFishing_AutoFishing_Toggle", {    Title = "Auto Fishing",
     Description = "",
     Default = false,
     Callback = function(v673)
@@ -5504,7 +5496,7 @@ task.spawn(function()
         end
     end
 end)
-Tabs.AutoFishing:AddDropdown({    Title = "Select Fishing Lure",
+Tabs.AutoFishing:AddDropdown("AutoFishing_SelectFishingLure_Dropdown", {    Title = "Select Fishing Lure",
     Description = "",
     Values = {"Basic Bait", "Kelp Bait", "Good Bait", "Abyssal Bait", "Frozen Bait", "Epic Bait", "Carnivore Bait"},
     Default = "Basic Bait",
@@ -5513,7 +5505,7 @@ Tabs.AutoFishing:AddDropdown({    Title = "Select Fishing Lure",
         l_FishingRequest_0:InvokeServer("SelectBait", v690)
     end
 })
-Tabs.AutoFishing:AddDropdown({    Title = "Select Fishing Rod",
+Tabs.AutoFishing:AddDropdown("AutoFishing_SelectFishingRod_Dropdown", {    Title = "Select Fishing Rod",
     Description = "",
     Values = {"Fishing Rod", "Gold Rod", "Shark Rod", "Shell Rod", "Treasure Rod"},
     Default = "Fishing Rod",
@@ -5523,7 +5515,7 @@ Tabs.AutoFishing:AddDropdown({    Title = "Select Fishing Rod",
 })
 if World1 then
     local _ = Tabs.QuestItems:AddSection("Quest Sea 1")
-    Tabs.QuestItems:AddToggle({        Title = "AutoSecondSea",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoSecondSea_Toggle", {        Title = "AutoSecondSea",
         Description = "",
         Default = false,
         Callback = function(v693)
@@ -5580,7 +5572,7 @@ if World1 then
         end
     end)
     local _ = Tabs.QuestItems:AddSection("Boss Greybeard")
-    Tabs.QuestItems:AddToggle({        Title = "Kill Greybeard",
+    Tabs.QuestItems:AddToggle("QuestItems_KillGreybeard_Toggle", {        Title = "Kill Greybeard",
         Description = "",
         Default = false,
         Callback = function(v698)
@@ -5624,7 +5616,7 @@ if World1 then
         end
     end)
     local _ = Tabs.QuestItems:AddSection("Quest Sword")
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Saber",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSaber_Toggle", {        Title = "Auto Get Saber",
         Description = "",
         Default = false,
         Callback = function(v702)
@@ -5730,7 +5722,7 @@ if World1 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Sword Pole",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordPole_Toggle", {        Title = "Auto Get Sword Pole",
         Description = "",
         Default = false,
         Callback = function(v707)
@@ -5765,7 +5757,7 @@ if World1 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Sword Saw",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordSaw_Toggle", {        Title = "Auto Get Sword Saw",
         Description = "",
         Default = false,
         Callback = function(v710)
@@ -5815,7 +5807,7 @@ if World1 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Sword Wardens",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordWardens_Toggle", {            Title = "Auto Get Sword Wardens",
             Description = "",
             Default = false,
             Callback = function(v715)
@@ -5850,7 +5842,7 @@ if World1 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Sword Trident",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordTrident_Toggle", {            Title = "Auto Get Sword Trident",
             Description = "",
             Default = false,
             Callback = function(v718)
@@ -5889,7 +5881,7 @@ if World1 then
 end
 if World2 then
     local _ = Tabs.QuestItems:AddSection("Quest Sea 2")
-    Tabs.QuestItems:AddToggle({        Title = "Auto Quest Sea Bartilo",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoQuestSeaBartilo_Toggle", {        Title = "Auto Quest Sea Bartilo",
         Description = "",
         Default = false,
         Callback = function(v722)
@@ -6029,7 +6021,7 @@ if World2 then
             end
         end)
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Quest Sea 3",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoQuestSea3_Toggle", {        Title = "Auto Quest Sea 3",
         Description = "",
         Default = false,
         Callback = function(v728)
@@ -6082,7 +6074,7 @@ if World2 then
     end)
 
     local _ = Tabs.QuestItems:AddSection("Boss Dark Beard")
-    Tabs.QuestItems:AddToggle({        Title = "Auto Kill Dark Beard",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoKillDarkBeard_Toggle", {        Title = "Auto Kill Dark Beard",
         Description = "",
         Default = false,
         Callback = function(v736)
@@ -6119,7 +6111,7 @@ if World2 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Kill Cursed Captain",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoKillCursedCaptain_Toggle", {        Title = "Auto Kill Cursed Captain",
         Description = "",
         Default = false,
         Callback = function(v739)
@@ -6157,7 +6149,7 @@ if World2 then
         end
     end)
     local _ = Tabs.QuestItems:AddSection("Auto Buy Haki  ")
-    Tabs.QuestItems:AddToggle({        Title = "Auto Buy Haki Colors",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoBuyHakiColors_Toggle", {        Title = "Auto Buy Haki Colors",
         Description = "",
         Default = false,
         Callback = function(v743)
@@ -6173,7 +6165,7 @@ if World2 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Buy Legendary Sword",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoBuyLegendarySword_Toggle", {        Title = "Auto Buy Legendary Sword",
         Default = false,
         Callback = function(v745)
             _G.AutoBuyLegendarySword = v745
@@ -6194,7 +6186,7 @@ if World2 then
         end
     end)
     local _ = Tabs.QuestItems:AddSection("Quest Sword")
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Longsword",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetLongsword_Toggle", {        Title = "Auto Get Longsword",
         Description = "",
         Default = false,
         Callback = function(v750)
@@ -6229,7 +6221,7 @@ if World2 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Sword Gravity Blade",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordGravityBlade_Toggle", {        Title = "Auto Get Sword Gravity Blade",
         Description = "",
         Default = false,
         Callback = function(v753)
@@ -6266,7 +6258,7 @@ if World2 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Sword Flail",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordFlail_Toggle", {        Title = "Auto Get Sword Flail",
         Description = "",
         Default = false,
         Callback = function(v756)
@@ -6301,7 +6293,7 @@ if World2 then
             end
         end
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Sword Rengoku",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordRengoku_Toggle", {        Title = "Auto Get Sword Rengoku",
         Description = "",
         Default = false,
         Callback = function(v759)
@@ -6342,7 +6334,7 @@ if World2 then
             end
         end)
     end)
-    Tabs.QuestItems:AddToggle({        Title = "Auto Get Sword Dragon Trident",
+    Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordDragonTrident_Toggle", {        Title = "Auto Get Sword Dragon Trident",
         Description = "",
         Default = false,
         Callback = function(v762)
@@ -6381,7 +6373,7 @@ end
 if World3 then
     local _ = Tabs.QuestItems:AddSection("Quest Sea 3")
     local _ = Tabs.QuestItems:AddSection("Boss Rip indra")
-    Tabs.QuestItems:AddToggle({        Title = "Auto kill Rip Indra",
+    Tabs.QuestItems:AddToggle("QuestItems_AutokillRipIndra_Toggle", {        Title = "Auto kill Rip Indra",
         Description = "",
         Default = false,
         Callback = function(v767)
@@ -6440,7 +6432,7 @@ if World3 then
                 end
             end)
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Haki Colors",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoHakiColors_Toggle", {            Title = "Auto Haki Colors",
             Description = "",
             Default = false,
             Callback = function(v775)
@@ -6457,7 +6449,7 @@ if World3 then
             end
         end)
         local _ = Tabs.QuestItems:AddSection("Quest Skull Guitar")
-        Tabs.QuestItems:AddToggle({            Title = "Auto Skull Guitar",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoSkullGuitar_Toggle", {            Title = "Auto Skull Guitar",
             Description = "",
             Default = false,
             Callback = function(v778)
@@ -6553,7 +6545,7 @@ if World3 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Kill Elite Hunter",
+        Tabs.QuestItems:AddToggle("QuestItems_KillEliteHunter_Toggle", {            Title = "Kill Elite Hunter",
             Description = "",
             Default = false,
             Callback = function(v793)
@@ -6606,7 +6598,7 @@ if World3 then
             end
         end)
         local _ = Tabs.QuestItems:AddSection("Auto CDK")
-        Tabs.QuestItems:AddToggle({            Title = "Auto Cdk [Beta]",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoCdkBeta_Toggle", {            Title = "Auto Cdk [Beta]",
             Description = "",
             Default = false,
             Callback = function(v797)
@@ -6675,7 +6667,7 @@ if World3 then
                 end)
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Yama",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetYama_Toggle", {            Title = "Auto Get Yama",
             Description = "",
             Default = false,
             Callback = function(v807)
@@ -6693,7 +6685,7 @@ if World3 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Holy Torch Tushita",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoHolyTorchTushita_Toggle", {            Title = "Auto Holy Torch Tushita",
             Description = "",
             Default = false,
             Callback = function(v808)
@@ -6738,7 +6730,7 @@ if World3 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Tushita",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetTushita_Toggle", {            Title = "Auto Get Tushita",
             Description = "",
             Default = false,
             Callback = function(v809)
@@ -6774,7 +6766,7 @@ if World3 then
             end
         end)
         local _ = Tabs.QuestItems:AddSection("Quest Sword")
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Sword Twin Hooks",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordTwinHooks_Toggle", {            Title = "Auto Get Sword Twin Hooks",
             Description = "",
             Default = false,
             Callback = function(v813)
@@ -6811,7 +6803,7 @@ if World3 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Sword Canvander",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordCanvander_Toggle", {            Title = "Auto Get Sword Canvander",
             Description = "",
             Default = false,
             Callback = function(v816)
@@ -6846,7 +6838,7 @@ if World3 then
                 end
             end
         end)
-        Tabs.QuestItems:AddToggle({            Title = "Auto Get Sword Buddy",
+        Tabs.QuestItems:AddToggle("QuestItems_AutoGetSwordBuddy_Toggle", {            Title = "Auto Get Sword Buddy",
             Description = "",
             Default = false,
             Callback = function(v819)
@@ -6946,7 +6938,7 @@ Tabs.QuestItems:AddButton({    Title = "Buy Acient One Quest",
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("UpgradeRace", "Buy")
     end
 })
-Tabs.QuestItems:AddToggle({    Title = "Auto Trial Human Ghost",
+Tabs.QuestItems:AddToggle("QuestItems_AutoTrialHumanGhost_Toggle", {    Title = "Auto Trial Human Ghost",
     Description = "",
     Default = false,
     Callback = function(v998)
@@ -6954,7 +6946,7 @@ Tabs.QuestItems:AddToggle({    Title = "Auto Trial Human Ghost",
         StopTween(_G.Kill_Aura)
     end
 })
-Tabs.QuestItems:AddToggle({    Title = "Auto Trial All Race",
+Tabs.QuestItems:AddToggle("QuestItems_AutoTrialAllRace_Toggle", {    Title = "Auto Trial All Race",
     Description = "",
     Default = false,
     Callback = function(v999)
@@ -7081,7 +7073,7 @@ spawn(function()
         end
     end)
 end)
-Tabs.QuestItems:AddToggle({    Title = "Auto Kill Player after Trial  V4",
+Tabs.QuestItems:AddToggle("QuestItems_AutoKillPlayerafterTrialV4_Toggle", {    Title = "Auto Kill Player after Trial  V4",
     Description = "",
     Default = false,
     Callback = function(v1020)
@@ -7113,7 +7105,7 @@ spawn(function()
     end
 end)
 local _ = Tabs.QuestItems:AddSection("Auto Skill")
-Tabs.QuestItems:AddToggle({    Title = "Auto Skill Z",
+Tabs.QuestItems:AddToggle("QuestItems_AutoSkillZ_Toggle", {    Title = "Auto Skill Z",
     Description = "",
     Default = false,
     Callback = function(v1024)
@@ -7121,7 +7113,7 @@ Tabs.QuestItems:AddToggle({    Title = "Auto Skill Z",
         StopTween(_G.XaiSkillZ)
     end
 })
-Tabs.QuestItems:AddToggle({    Title = "Auto Skill X",
+Tabs.QuestItems:AddToggle("QuestItems_AutoSkillX_Toggle", {    Title = "Auto Skill X",
     Description = "",
     Default = false,
     Callback = function(v1025)
@@ -7129,7 +7121,7 @@ Tabs.QuestItems:AddToggle({    Title = "Auto Skill X",
         StopTween(_G.XaiSkillX)
     end
 })
-Tabs.QuestItems:AddToggle({    Title = "Auto Skill C",
+Tabs.QuestItems:AddToggle("QuestItems_AutoSkillC_Toggle", {    Title = "Auto Skill C",
     Description = "",
     Default = false,
     Callback = function(v1026)
@@ -7139,7 +7131,7 @@ Tabs.QuestItems:AddToggle({    Title = "Auto Skill C",
 })
 end
 local _ = Tabs.SeaEvent:AddSection("Sea Events")
-Tabs.SeaEvent:AddToggle({    Title = "Auto Drive Boats",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoDriveBoats_Toggle", {    Title = "Auto Drive Boats",
     Description = "",
     Default = false,
     Callback = function(v948)
@@ -7197,7 +7189,7 @@ spawn(function()
         end
     end)
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Kill Terror Shank",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoKillTerrorShank_Toggle", {    Title = "Auto Kill Terror Shank",
     Description = "",
     Default = false,
     Callback = function(v952)
@@ -7311,7 +7303,7 @@ spawn(function()
         end
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Kill Shark",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoKillShark_Toggle", {    Title = "Auto Kill Shark",
     Description = "",
     Default = false,
     Callback = function(v968)
@@ -7354,7 +7346,7 @@ spawn(function()
         end
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Kill Piranha",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoKillPiranha_Toggle", {    Title = "Auto Kill Piranha",
     Description = "",
     Default = false,
     Callback = function(v973)
@@ -7397,7 +7389,7 @@ spawn(function()
         end
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Kill Fish Crew Member",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoKillFishCrewMember_Toggle", {    Title = "Auto Kill Fish Crew Member",
     Description = "",
     Default = false,
     Callback = function(v978)
@@ -7447,7 +7439,7 @@ Tabs.SeaEvent:AddButton({    Title = "Tween Dragon Dojo",
         topos(CFrame.new(5841.29, 1208.32, 884.31))
     end
 })
-Tabs.SeaEvent:AddToggle({    Title = "Auto Dragon Huntery",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoDragonHuntery_Toggle", {    Title = "Auto Dragon Huntery",
     Description = "",
     Default = false,
     Callback = function(v822)
@@ -7588,7 +7580,7 @@ task.spawn(function()
         end)
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Find Prehistoric",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoFindPrehistoric_Toggle", {    Title = "Auto Find Prehistoric",
     Description = "",
     Default = false,
     Callback = function(v851)
@@ -7699,7 +7691,7 @@ l_RunService_0.RenderStepped:Connect(function()
         return 
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Tween Prehistoric Island",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoTweenPrehistoricIsland_Toggle", {    Title = "Auto Tween Prehistoric Island",
     Description = "",
     Default = false,
     Callback = function(v882)
@@ -7727,7 +7719,7 @@ spawn(function()
         end
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Defend Prehistoric",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoDefendPrehistoric_Toggle", {    Title = "Auto Defend Prehistoric",
     Description = "",
     Default = false,
     Callback = function(v887)
@@ -7832,7 +7824,7 @@ spawn(function()
     end
 end)
 local _ = Tabs.SeaEvent:AddSection("Auto Skill")
-Tabs.SeaEvent:AddToggle({    Title = "Auto Use Melee",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoUseMelee_Toggle", {    Title = "Auto Use Melee",
     Description = "",
     Default = false,
     Callback = function(v918)
@@ -7840,7 +7832,7 @@ Tabs.SeaEvent:AddToggle({    Title = "Auto Use Melee",
         StopTween(_G.UseMelee)
     end
 })
-Tabs.SeaEvent:AddToggle({    Title = "Auto Use Sword",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoUseSword_Toggle", {    Title = "Auto Use Sword",
     Description = "",
     Default = false,
     Callback = function(v919)
@@ -7848,7 +7840,7 @@ Tabs.SeaEvent:AddToggle({    Title = "Auto Use Sword",
         StopTween(_G.UseSword)
     end
 })
-Tabs.SeaEvent:AddToggle({    Title = "Auto Use Gun",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoUseGun_Toggle", {    Title = "Auto Use Gun",
     Description = "",
     Default = false,
     Callback = function(v920)
@@ -7857,7 +7849,7 @@ Tabs.SeaEvent:AddToggle({    Title = "Auto Use Gun",
     end
 })
 local _ = Tabs.SeaEvent:AddSection("Auto Kill Golem")
-Tabs.SeaEvent:AddToggle({    Title = "Auto Kill Golem",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoKillGolem_Toggle", {    Title = "Auto Kill Golem",
     Description = "",
     Default = false,
     Callback = function(v922)
@@ -7894,7 +7886,7 @@ spawn(function()
         end
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Kill Aura Golem",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoKillAuraGolem_Toggle", {    Title = "Auto Kill Aura Golem",
     Description = "",
     Default = false,
     Callback = function(v925)
@@ -7934,7 +7926,7 @@ spawn(function()
     end)
 end)
 local _ = Tabs.SeaEvent:AddSection("Auto Collect Bone,Egg")
-Tabs.SeaEvent:AddToggle({    Title = "Auto Collect Bone",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoCollectBone_Toggle", {    Title = "Auto Collect Bone",
     Description = "",
     Default = false,
     Callback = function(v934)
@@ -7953,7 +7945,7 @@ spawn(function()
         end
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Collect Egg",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoCollectEgg_Toggle", {    Title = "Auto Collect Egg",
     Description = "",
     Default = false,
     Callback = function(v937)
@@ -7983,7 +7975,7 @@ task.spawn(function()
         end)
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Tween Kitsune island",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoTweenKitsuneisland_Toggle", {    Title = "Auto Tween Kitsune island",
     Description = "",
     Default = false,
     Callback = function(v940)
@@ -8019,7 +8011,7 @@ spawn(function()
         end
     end)
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Esp Kitsune Island",
+Tabs.SeaEvent:AddToggle("SeaEvent_EspKitsuneIsland_Toggle", {    Title = "Esp Kitsune Island",
     Default = false,
     Callback = function(v945)
         KitsuneIslandEsp = v945
@@ -8035,7 +8027,7 @@ Tabs.SeaEvent:AddToggle({    Title = "Esp Kitsune Island",
         end
     end
 })
-Tabs.SeaEvent:AddToggle({    Title = "Auto Azuer Ember",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoAzuerEmber_Toggle", {    Title = "Auto Azuer Ember",
     Description = "",
     Default = false,
     Callback = function(v946)
@@ -8067,7 +8059,7 @@ task.spawn(function()
         end)
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Tween Mirage Island",
+Tabs.SeaEvent:AddToggle("SeaEvent_TweenMirageIsland_Toggle", {    Title = "Tween Mirage Island",
     Description = "",
     Default = false,
     Callback = function(v985)
@@ -8088,7 +8080,7 @@ spawn(function()
         end)
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Esp Mirage Island",
+Tabs.SeaEvent:AddToggle("SeaEvent_EspMirageIsland_Toggle", {    Title = "Esp Mirage Island",
     Description = "",
     Default = false,
     Callback = function(v988)
@@ -8105,7 +8097,7 @@ Tabs.SeaEvent:AddToggle({    Title = "Esp Mirage Island",
         end
     end
 })
-Tabs.SeaEvent:AddToggle({    Title = "Look Moon + Auto V3",
+Tabs.SeaEvent:AddToggle("SeaEvent_LookMoonAutoV3_Toggle", {    Title = "Look Moon + Auto V3",
     Description = "",
     Default = false,
     Callback = function(v989)
@@ -8129,7 +8121,7 @@ spawn(function()
         end)
     end
 end)
-Tabs.SeaEvent:AddToggle({    Title = "Auto Tween To Gear",
+Tabs.SeaEvent:AddToggle("SeaEvent_AutoTweenToGear_Toggle", {    Title = "Auto Tween To Gear",
     Description = "",
     Default = false,
     Callback = function(v993)
@@ -8152,7 +8144,7 @@ spawn(function()
 end)
 
 local _ = Tabs.RaidFruits:AddSection("Fruits")
-Tabs.RaidFruits:AddToggle({    Title = "Auto Random Fruits",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoRandomFruits_Toggle", {    Title = "Auto Random Fruits",
     Description = "",
     Default = false,
     Callback = function(v1074)
@@ -8168,7 +8160,7 @@ spawn(function()
         end
     end)
 end)
-Tabs.RaidFruits:AddToggle({    Title = "Auto Store Fruits",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoStoreFruits_Toggle", {    Title = "Auto Store Fruits",
     Description = "",
     Default = false,
     Callback = function(v1075)
@@ -8237,7 +8229,7 @@ spawn(function()
         end
     end
 end)
-Tabs.RaidFruits:AddToggle({    Title = "Teleport To Fruit Spawn",
+Tabs.RaidFruits:AddToggle("RaidFruits_TeleportToFruitSpawn_Toggle", {    Title = "Teleport To Fruit Spawn",
     Description = "",
     Default = false,
     Callback = function(v1084)
@@ -8255,7 +8247,7 @@ spawn(function()
         end
     end
 end)
-Tabs.RaidFruits:AddToggle({    Title = "Auto Teleport Fruits",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoTeleportFruits_Toggle", {    Title = "Auto Teleport Fruits",
     Description = "",
     Default = false,
     Callback = function(v1087)
@@ -8358,7 +8350,7 @@ _G.AutoBuyChip = false
 _G.StartRaid = false
 _G.Dungeon = false
 
-Tabs.RaidFruits:AddDropdown({    Title = "Select Chip",
+Tabs.RaidFruits:AddDropdown("RaidFruits_SelectChip_Dropdown", {    Title = "Select Chip",
     Values = {
         "Flame","Ice","Sand","Dark","Light","Magma",
         "Quake","Buddha","Spider","Phoenix","Lightning","Dough"
@@ -8372,7 +8364,7 @@ Tabs.RaidFruits:AddDropdown({    Title = "Select Chip",
 -- =========================
 -- AUTO BUY CHIP
 -- =========================
-Tabs.RaidFruits:AddToggle({    Title = "Auto Buy Chip",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoBuyChip_Toggle", {    Title = "Auto Buy Chip",
     Default = false,
     Callback = function(v)
         _G.AutoBuyChip = v
@@ -8396,7 +8388,7 @@ end)
 -- =========================
 -- AUTO START RAID
 -- =========================
-Tabs.RaidFruits:AddToggle({    Title = "Auto Start Raid",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoStartRaid_Toggle", {    Title = "Auto Start Raid",
     Default = false,
     Callback = function(v)
         _G.StartRaid = v
@@ -8436,7 +8428,7 @@ end)
 -- =========================
 -- AUTO FARM RAID NEXT ISLAND
 -- =========================
-Tabs.RaidFruits:AddToggle({    Title = "Auto Farm Raid Next Island",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoFarmRaidNextIsland_Toggle", {    Title = "Auto Farm Raid Next Island",
     Default = false,
     Callback = function(v)
         _G.Dungeon = v
@@ -8518,7 +8510,7 @@ Tabs.RaidFruits:AddButton({    Title = "Auto Start Raid Law",
         fireclickdetector(game:GetService("Workspace").Map.CircleIsland.RaidSummon.Button.Main.ClickDetector)
     end
 })
-Tabs.RaidFruits:AddToggle({    Title = "Auto Farm Law Raid",
+Tabs.RaidFruits:AddToggle("RaidFruits_AutoFarmLawRaid_Toggle", {    Title = "Auto Farm Law Raid",
     Description = "",
     Default = false,
     Callback = function(v1070)
@@ -8631,7 +8623,7 @@ else
         "Mob Island"
     }
 end
-Tabs.Teleport:AddDropdown({    Title = "Select Island",
+Tabs.Teleport:AddDropdown("Teleport_SelectIsland_Dropdown", {    Title = "Select Island",
     Description = "",
     Values = v1117,
     Default = v1117[1],
@@ -8639,7 +8631,7 @@ Tabs.Teleport:AddDropdown({    Title = "Select Island",
         _G.SelectIsland = v1118
     end
 })
-Tabs.Teleport:AddToggle({    Title = "Auto Tween To Island",
+Tabs.Teleport:AddToggle("Teleport_AutoTweenToIsland_Toggle", {    Title = "Auto Tween To Island",
     Description = "",
     Default = false,
     Callback = function(v)
@@ -8941,7 +8933,7 @@ local function DistributePoints()
 end
 
 -- UI
-Tabs.Stats:AddSlider({    Rounding = 0,
+Tabs.Stats:AddSlider("Stats_PointsAmount_Slider", {    Rounding = 0,
     Title = "Points Amount",
     Min = 1,
     Max = 500,
@@ -8952,7 +8944,7 @@ Tabs.Stats:AddSlider({    Rounding = 0,
     end
 })
 
-Tabs.Stats:AddToggle({    Title = "Auto Status",
+Tabs.Stats:AddToggle("Stats_AutoStatus_Toggle", {    Title = "Auto Status",
     Default = false,
     Callback = function(v)
         AutoStats = v
@@ -8964,35 +8956,35 @@ Tabs.Stats:AddToggle({    Title = "Auto Status",
 
 local Section = Tabs.Stats:AddSection("Select Status")
 
-Tabs.Stats:AddToggle({    Title = "Melee",
+Tabs.Stats:AddToggle("Stats_Melee_Toggle", {    Title = "Melee",
     Default = false,
     Callback = function(v)
         StatsSelect.Melee = v
     end
 })
 
-Tabs.Stats:AddToggle({    Title = "Defense",
+Tabs.Stats:AddToggle("Stats_Defense_Toggle", {    Title = "Defense",
     Default = false,
     Callback = function(v)
         StatsSelect.Defense = v
     end
 })
 
-Tabs.Stats:AddToggle({    Title = "Sword",
+Tabs.Stats:AddToggle("Stats_Sword_Toggle", {    Title = "Sword",
     Default = false,
     Callback = function(v)
         StatsSelect.Sword = v
     end
 })
 
-Tabs.Stats:AddToggle({    Title = "Gun",
+Tabs.Stats:AddToggle("Stats_Gun_Toggle", {    Title = "Gun",
     Default = false,
     Callback = function(v)
         StatsSelect.Gun = v
     end
 })
 
-Tabs.Stats:AddToggle({    Title = "Fruit",
+Tabs.Stats:AddToggle("Stats_Fruit_Toggle", {    Title = "Fruit",
     Default = false,
     Callback = function(v)
         StatsSelect.BloxFruit = v
@@ -9044,7 +9036,7 @@ end
 -- ===============================
 -- TOGGLE PRINCIPAL
 -- ===============================
-Tabs.Visual:AddToggle({    Title = "Aimbot Gun",
+Tabs.Visual:AddToggle("Visual_AimbotGun_Toggle", {    Title = "Aimbot Gun",
     Default = false,
     Callback = function(v)
         AimbotEnabled = v
@@ -9062,7 +9054,7 @@ Tabs.Visual:AddToggle({    Title = "Aimbot Gun",
 -- ===============================
 -- AIM PLAYERS
 -- ===============================
-Tabs.Visual:AddToggle({    Title = "Aimbot Tap",
+Tabs.Visual:AddToggle("Visual_AimbotTap_Toggle", {    Title = "Aimbot Tap",
     Default = false,
     Callback = function(v)
         AimPlayers = v
@@ -9078,7 +9070,7 @@ Tabs.Visual:AddToggle({    Title = "Aimbot Tap",
 -- ===============================
 -- AIM MOBS
 -- ===============================
-Tabs.Visual:AddToggle({    Title = "Aimbot Skills",
+Tabs.Visual:AddToggle("Visual_AimbotSkills_Toggle", {    Title = "Aimbot Skills",
     Default = false,
     Callback = function(v)
         AimMobs = v
@@ -9094,7 +9086,7 @@ Tabs.Visual:AddToggle({    Title = "Aimbot Skills",
 -- ===============================
 -- IGNORE MOBS (AGORA FUNCIONAL)
 -- ===============================
-Tabs.Visual:AddToggle({    Title = "Ignore Mobs",
+Tabs.Visual:AddToggle("Visual_IgnoreMobs_Toggle", {    Title = "Ignore Mobs",
     Default = true,
     Callback = function(v)
         IgnoreMobs = v
@@ -9109,7 +9101,7 @@ local AimbotEnabled = false
 local AimPlayers = false
 local AimMobs = false
 
-Tabs.Visual:AddToggle({    Title = "Enable Aimbot Skill",
+Tabs.Visual:AddToggle("Visual_EnableAimbotSkill_Toggle", {    Title = "Enable Aimbot Skill",
     Default = false,
     Callback = function(v)
         AimbotEnabled = v
@@ -9130,7 +9122,7 @@ Tabs.Visual:AddToggle({    Title = "Enable Aimbot Skill",
     end
 })
 
-Tabs.Visual:AddToggle({    Title = "Aimbot on Players",
+Tabs.Visual:AddToggle("Visual_AimbotonPlayers_Toggle", {    Title = "Aimbot on Players",
     Default = false,
     Callback = function(v)
         AimPlayers = v
@@ -9148,7 +9140,7 @@ Tabs.Visual:AddToggle({    Title = "Aimbot on Players",
     end
 })
 
-Tabs.Visual:AddToggle({    Title = "Aimbot on Mobs",
+Tabs.Visual:AddToggle("Visual_AimbotonMobs_Toggle", {    Title = "Aimbot on Mobs",
     Default = false,
     Callback = function(v)
         AimMobs = v
@@ -9176,7 +9168,7 @@ else
 	writefile(ESP_SIZE_FILE, "24")
 end
 
-Tabs.Visual:AddSlider({	Rounding = 0,
+Tabs.Visual:AddSlider("Visual_ESPSize_Slider", {	Rounding = 0,
     Title = "ESP Size",
 	Min = 10,
 	Max = 40,
@@ -9360,7 +9352,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 -- Toggle da sua lib
-Tabs.Visual:AddToggle({	Title = "ESP Players",
+Tabs.Visual:AddToggle("Visual_ESPPlayers_Toggle", {	Title = "ESP Players",
 	Default = ESPPlayer,
 	Callback = function(v)
 		ESPPlayer = v
@@ -9377,7 +9369,7 @@ Tabs.Visual:AddToggle({	Title = "ESP Players",
 		end
 	end
 })
-Tabs.Visual:AddToggle({    Title = "Esp Chest",
+Tabs.Visual:AddToggle("Visual_EspChest_Toggle", {    Title = "Esp Chest",
     Default = false,
     Callback = function(v1147)
         _G.ChestESP = v1147
@@ -9394,7 +9386,7 @@ Tabs.Visual:AddToggle({    Title = "Esp Chest",
     end
 })
 
-Tabs.Visual:AddToggle({    Title = "ESP Fruits",
+Tabs.Visual:AddToggle("Visual_ESPFruits_Toggle", {    Title = "ESP Fruits",
     Default = false,
     Callback = function(state)
         DevilFruitESP = state
@@ -9457,7 +9449,7 @@ Tabs.Visual:AddToggle({    Title = "ESP Fruits",
     end
 })
 
-Tabs.Visual:AddToggle({    Title = "Esp Berry",
+Tabs.Visual:AddToggle("Visual_EspBerry_Toggle", {    Title = "Esp Berry",
     Default = false,
     Callback = function(v1149)
         Berry = v1149
@@ -9637,7 +9629,7 @@ local function StopAllBuy()
 	StopFly()
 end
 
-Tabs.Shop:AddToggle({	Title = "Buy Black Leg",
+Tabs.Shop:AddToggle("Shop_BuyBlackLeg_Toggle", {	Title = "Buy Black Leg",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9648,7 +9640,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Black Leg",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Electro",
+Tabs.Shop:AddToggle("Shop_BuyElectro_Toggle", {	Title = "Buy Electro",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9659,7 +9651,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Electro",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Fishman Karate",
+Tabs.Shop:AddToggle("Shop_BuyFishmanKarate_Toggle", {	Title = "Buy Fishman Karate",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9670,7 +9662,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Fishman Karate",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Superhuman",
+Tabs.Shop:AddToggle("Shop_BuySuperhuman_Toggle", {	Title = "Buy Superhuman",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9681,7 +9673,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Superhuman",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Death Step",
+Tabs.Shop:AddToggle("Shop_BuyDeathStep_Toggle", {	Title = "Buy Death Step",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9692,7 +9684,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Death Step",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Sharkman Karate",
+Tabs.Shop:AddToggle("Shop_BuySharkmanKarate_Toggle", {	Title = "Buy Sharkman Karate",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9703,7 +9695,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Sharkman Karate",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Electric Claw",
+Tabs.Shop:AddToggle("Shop_BuyElectricClaw_Toggle", {	Title = "Buy Electric Claw",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9714,7 +9706,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Electric Claw",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Dragon Talon",
+Tabs.Shop:AddToggle("Shop_BuyDragonTalon_Toggle", {	Title = "Buy Dragon Talon",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9725,7 +9717,7 @@ Tabs.Shop:AddToggle({	Title = "Buy Dragon Talon",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy God Human",
+Tabs.Shop:AddToggle("Shop_BuyGodHuman_Toggle", {	Title = "Buy God Human",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9736,7 +9728,7 @@ Tabs.Shop:AddToggle({	Title = "Buy God Human",
 	end
 })
 
-Tabs.Shop:AddToggle({	Title = "Buy Sanguine Art",
+Tabs.Shop:AddToggle("Shop_BuySanguineArt_Toggle", {	Title = "Buy Sanguine Art",
 	Default = false,
 	Callback = function(v)
 		StopAllBuy()
@@ -9990,7 +9982,7 @@ Tabs.Misc:AddButton({    Title = "Join Clipboard",
 })
 
 local _ = Tabs.Misc:AddSection("Settings")
-Tabs.Misc:AddToggle({    Title = "Fast Attack",
+Tabs.Misc:AddToggle("Misc_FastAttack_Toggle", {    Title = "Fast Attack",
     Description = "",
     Default = true,
     Callback = function(value)
@@ -10130,7 +10122,7 @@ task.spawn(function()
         end
     end
 end)
-Tabs.Misc:AddToggle({    Title = "Bring Mob",
+Tabs.Misc:AddToggle("Misc_BringMob_Toggle", {    Title = "Bring Mob",
     Description = "",
     Default = true,
     Callback = function(v1165)
@@ -10225,7 +10217,7 @@ if l_LocalPlayer_18.Character then
 	v1135(l_LocalPlayer_18.Character)
 end
 
-Tabs.Misc:AddSlider({	Rounding = 0,
+Tabs.Misc:AddSlider("Misc_Speed_Slider", {	Rounding = 0,
     Title = "Speed",
 	Min = 26,
 	Max = 300,
@@ -10241,7 +10233,7 @@ Tabs.Misc:AddSlider({	Rounding = 0,
 	end
 })
 
-Tabs.Misc:AddSlider({	Rounding = 0,
+Tabs.Misc:AddSlider("Misc_Jump_Slider", {	Rounding = 0,
     Title = "Jump",
 	Min = 50,
 	Max = 500,
@@ -10256,7 +10248,7 @@ Tabs.Misc:AddSlider({	Rounding = 0,
 		end
 	end
 })
-Tabs.Misc:AddToggle({    Title = "Delete Lava",
+Tabs.Misc:AddToggle("Misc_DeleteLava_Toggle", {    Title = "Delete Lava",
     Description = "",
     Default = false,
     Callback = function(v1141)
@@ -10280,7 +10272,7 @@ spawn(function()
     end
 end)
 
-Tabs.Misc:AddToggle({    Title = "Set Home Point",
+Tabs.Misc:AddToggle("Misc_SetHomePoint_Toggle", {    Title = "Set Home Point",
     Description = "",
     Default = false,
     Callback = function(v1169)
@@ -10294,7 +10286,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Misc:AddToggle({itle = "Infinite Soru", Default = false, Callback = function(v1170)
+Tabs.Misc:AddToggle("Misc_InfiniteSoru_Toggle", { Title = "Infinite Soru", Default = false, Callback = function(v1170)
     _G.AutoHaki = v1170
 end})
 spawn(function()
@@ -10304,7 +10296,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Misc:AddToggle({    Title = "Auto Active Race V3",
+Tabs.Misc:AddToggle("Misc_AutoActiveRaceV3_Toggle", {    Title = "Auto Active Race V3",
     Description = "",
     Default = false,
     Callback = function(v1171)
@@ -10322,7 +10314,7 @@ spawn(function()
 end)
 _G.AutoRaceV4 = false
 
-Tabs.Misc:AddToggle({    Title = "Auto Active Race V4",
+Tabs.Misc:AddToggle("Misc_AutoActiveRaceV4_Toggle", {    Title = "Auto Active Race V4",
     Description = "",
     Default = false,
     Callback = function(state)
@@ -10358,7 +10350,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Misc:AddToggle({itle = "Infinite Soru", Default = false, Callback = function(v1173)
+Tabs.Misc:AddToggle("Misc_InfiniteSoru_Toggle_2", { Title = "Infinite Soru", Default = false, Callback = function(v1173)
     InfiniteSoru = v1173
 end})
 spawn(function()
@@ -10382,7 +10374,7 @@ spawn(function()
     end
 end)
 PosY = 30
-Tabs.Misc:AddToggle({itle = "Dodge No CD", Default = false, Callback = function(v1178)
+Tabs.Misc:AddToggle("Misc_DodgeNoCD_Toggle", { Title = "Dodge No CD", Default = false, Callback = function(v1178)
     DodgewithoutCool = v1178
 end})
 function NoCooldown()
@@ -10405,7 +10397,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Misc:AddToggle({itle = "Infinite Geppo", Default = false, Callback = function(v1183)
+Tabs.Misc:AddToggle("Misc_InfiniteGeppo_Toggle", { Title = "Infinite Geppo", Default = false, Callback = function(v1183)
     InfiniteGeppo = v1183
 end})
 spawn(function()
@@ -10428,7 +10420,7 @@ spawn(function()
         end
     end
 end)
-Tabs.Misc:AddToggle({    Title = "Walk on Water",
+Tabs.Misc:AddToggle("Misc_WalkonWater_Toggle", {    Title = "Walk on Water",
     Default = true,
     Callback = function(v1188)
         _G.WalkWater = v1188
@@ -10488,7 +10480,7 @@ end
 
 ApplyFullBright(FullBrightEnabled)
 
-Tabs.Misc:AddToggle({	Title = "Full Bright",
+Tabs.Misc:AddToggle("Misc_FullBright_Toggle", {	Title = "Full Bright",
 	Default = FullBrightEnabled,
 	Callback = function(Value)
 		FullBrightEnabled = Value
@@ -10624,7 +10616,7 @@ Tabs.Misc:AddButton({    Title = "Codes",
 })
 local RunService = game:GetService("RunService")
 
-Tabs.Misc:AddToggle({	Title = "White Screen",
+Tabs.Misc:AddToggle("Misc_WhiteScreen_Toggle", {	Title = "White Screen",
 	Default = false,
 	Callback = function(Value)
 
@@ -10715,7 +10707,7 @@ function GetNewServer()
 end
 
 -- ===== TOGGLE REDZLIB =====
-Tabs.Misc:AddToggle({    Title = "Anti-reset",
+Tabs.Misc:AddToggle("Misc_Antireset_Toggle", {    Title = "Anti-reset",
     Description = "Server hop every 30 minutes",
     Default = false,
     Callback = function(Value)
@@ -10744,5 +10736,15 @@ Tabs.Misc:AddToggle({    Title = "Anti-reset",
         end
     end
 })
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("BOMBHub")
+SaveManager:SetFolder("BOMBHub")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+SaveManager:LoadAutoloadConfig()
 
 return Fluent
