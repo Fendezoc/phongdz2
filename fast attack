@@ -1,0 +1,400 @@
+            return
+        end
+        flag2 = true
+        flag3 = false
+
+        connection10 = RunService.Heartbeat:Connect(function()
+            if flag2 then
+                fn66()
+                fn69()
+            end
+        end)
+    end
+
+    StopGunShoot = function()
+        flag2 = false
+        flag3 = false
+
+        if connection10 then
+            connection10:Disconnect()
+            connection10 = nil
+        end
+    end
+
+    StartGunShootSilent = function()
+        if flag2 and not flag3 then
+            _G.SilentGunShootFromFarm = true
+            return
+        end
+
+        if not flag3 then
+            flag3 = true
+            _G.SilentGunShootFromFarm = true
+
+            connection10 = RunService.Heartbeat:Connect(function()
+                if flag3 or flag2 then
+                    fn66()
+                    fn69()
+                end
+            end)
+
+            return
+        end
+
+        _G.SilentGunShootFromFarm = true
+    end
+
+    StopGunShootSilent = function()
+        if flag2 and not flag3 then
+            _G.SilentGunShootFromFarm = false
+            return
+        end
+
+        if not flag3 then
+            return
+        end
+
+        if fn13() then
+            return
+        end
+        flag3 = false
+        _G.SilentGunShootFromFarm = false
+
+        if connection10 then
+            connection10:Disconnect()
+            connection10 = nil
+        end
+    end
+
+    local function fn70(arg, arg2)
+        local ok, result = pcall(function()
+            return arg:WaitForChild(arg2)
+        end)
+
+        if not ok or not result then
+            warn("Không tìm thấy: " .. arg2)
+        end
+
+        return result
+    end
+
+    local function fn71()
+        local v9 = getgenv
+        local v10 = v9 or getrenv or getfenv
+        local v11 = v10()
+        local ReplicatedStorage2 = game:GetService("ReplicatedStorage")
+        local localPlayer2 = game:GetService("Players").LocalPlayer
+        local Workspace2 = game:GetService("Workspace")
+        if not fn70(ReplicatedStorage2, "Remotes") then
+            return
+        end
+        local net = fn70(fn70(ReplicatedStorage2, "Modules"), "Net")
+        if not net then
+            return
+        end
+        local v12 = fn70(net, "RE/RegisterAttack")
+        local v13 = fn70(net, "RE/RegisterHit")
+        local enemies = Workspace2:FindFirstChild("Enemies")
+        local characters = Workspace2:FindFirstChild("Characters")
+        local tbl10 = {AutoClick = true, ClickDelay = 0}
+
+        local rzFastAttack = {
+            Distance = 100,
+            attackMobs = true,
+            attackPlayers = true,
+            Equipped = nil,
+        }
+
+        local function fn72(arg)
+            local flag11 = arg and arg:FindFirstChild("Humanoid") and arg.Humanoid.Health > 0
+            return flag11
+        end
+
+        local function fn73(arg, arg2)
+            local v14 = nil
+            if not arg2 then
+                return nil
+            end
+
+            for k, v15 in arg2:GetChildren() do
+                local head = v15:FindFirstChild("Head")
+
+                if head and fn72(v15) and localPlayer2:DistanceFromCharacter(head.Position) < rzFastAttack.Distance and v15 ~= localPlayer2.Character then
+                    table.insert(arg, {v15, head})
+                    v14 = head
+                end
+            end
+
+            return v14
+        end
+
+        rzFastAttack.Attack = function(arg, arg2, arg3)
+            if not arg2 or #arg3 == 0 then
+                return
+            end
+
+            if v12 and v13 then
+                pcall(function()
+                    local fireServer = v12.FireServer
+                    local clickDelay = tbl10.ClickDelay
+                    local n7 = clickDelay or 0
+                    fireServer(v12, n7)
+                    v13:FireServer(arg2, arg3)
+                end)
+            end
+        end
+
+        rzFastAttack.AttackNearest = function(arg)
+            local tbl11 = {}
+            local v14 = fn73(tbl11, enemies)
+            local v15 = fn73(tbl11, characters)
+            local character = localPlayer2.Character
+            if not character then
+                return
+            end
+            local tool = character:FindFirstChildOfClass("Tool")
+
+            if tool and tool:FindFirstChild("LeftClickRemote") and tbl.AutoClickerEnabled then
+                for i, v16 in ipairs(tbl11) do
+                    local v17 = v16[1]
+
+                    pcall(function()
+                        local humanoidRootPart = v17:FindFirstChild("HumanoidRootPart")
+
+                        if humanoidRootPart then
+                            local unit = (humanoidRootPart.Position - character:GetPivot().Position).Unit
+                            tool.LeftClickRemote:FireServer(unit, 1)
+                        end
+                    end)
+                end
+            elseif #tbl11 > 0 then
+                local attack = arg.Attack
+                local v16 = v14 or v15
+                attack(arg, v16, tbl11)
+            end
+        end
+
+        rzFastAttack.BladeHits = function(arg)
+            local v14 = fn72(localPlayer2.Character)
+            local tool = v14 and localPlayer2.Character:FindFirstChildOfClass("Tool")
+
+            if tool and tool.ToolTip ~= "Gun" then
+                arg:AttackNearest()
+            end
+        end
+
+        task.spawn(function()
+            while task.wait(tbl10.ClickDelay) do
+                if _G.FastAttack and tbl10.AutoClick then
+                    rzFastAttack:BladeHits()
+                end
+            end
+        end)
+
+        v11.rz_FastAttack = rzFastAttack
+        return rzFastAttack
+    end
+
+    local v9 = nil
+    local v10 = nil
+    local v11 = next
+
+    local tbl10 = {
+        game.ReplicatedStorage.Util,
+        game.ReplicatedStorage.Common,
+        game.ReplicatedStorage.Remotes,
+        game.ReplicatedStorage.Assets,
+        game.ReplicatedStorage.FX,
+    }
+
+    while true do
+        local v12, v13 = v11(tbl10, v2)
+        if v12 == nil then
+            break
+        end
+        v2 = v12
+
+        if v13 then
+            local v14 = next
+            local children, v15 = v13:GetChildren()
+
+            for k, v16 in v14, children, v15 do
+                if v16:IsA("RemoteEvent") and v16:GetAttribute("Id") then
+                    local attribute = v16:GetAttribute("Id")
+                    v9 = v16
+                    v10 = attribute
+                end
+            end
+
+            v2 = v12
+
+            v13.ChildAdded:Connect(function(child)
+                if child:IsA("RemoteEvent") and child:GetAttribute("Id") then
+                    local attribute = child:GetAttribute("Id")
+                    v9 = child
+                    v10 = attribute
+                end
+            end)
+        end
+    end
+
+    task.spawn(function()
+        while task.wait(0.04) do
+            if _G.FastAttack then
+                pcall(function()
+                    local character = game.Players.LocalPlayer.Character
+                    local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+                    local tbl11 = {}
+                    if not humanoidRootPart then
+                        return
+                    end
+                    local v12, v13, v14 = ipairs({workspace.Enemies, workspace.Characters})
+                    local v15 = v14
+                    local v16 = v12
+                    local v17 = v13
+
+                    while true do
+                        local v18, v19 = v16(v17, v15)
+                        if v18 == nil then
+                            break
+                        end
+                        local v20 = ipairs
+                        local children = v19 and v19:GetChildren() or {}
+                        local v21, v22, v23 = v20(children)
+                        local v24 = v18
+                        local v25 = v16
+                        local v26 = v17
+                        local v27 = v23
+                        local v28 = v21
+                        local v29 = v22
+
+                        while true do
+                            local v30, v31 = v28(v29, v27)
+                            if v30 == nil then
+                                break
+                            end
+                            v27 = v30
+                            local humanoidRootPart2 = v31:FindFirstChild("HumanoidRootPart")
+                            local humanoid = v31:FindFirstChild("Humanoid")
+
+                            if v31 ~= character and humanoidRootPart2 and humanoid and humanoid.Health > 0 and (humanoidRootPart2.Position - humanoidRootPart.Position).Magnitude <= 60 then
+                                for i, child in ipairs(v31:GetChildren()) do
+                                    if child:IsA("BasePart") then
+                                        tbl11[#tbl11 + 1] = {v31, child}
+                                    end
+                                end
+
+                                v27 = v30
+                            end
+                        end
+
+                        v15 = v24
+                        v16 = v25
+                        v17 = v26
+                    end
+
+                    local tool = character:FindFirstChildOfClass("Tool")
+
+                    if #tbl11 > 0 and tool and (tool:GetAttribute("WeaponType") == "Melee" or tool:GetAttribute("WeaponType") == "Sword" or tool:GetAttribute("WeaponType") == "Blox Fruit" or tool:GetAttribute("WeaponType") == "DevilFruit") then
+                        pcall(function()
+                            local net = game.ReplicatedStorage.Modules.Net
+
+                            if net then
+                                local reRegisterHit = net["RE/RegisterHit"]
+                                local reRegisterAttack = net["RE/RegisterAttack"]
+
+                                if reRegisterAttack then
+                                    reRegisterAttack:FireServer()
+                                end
+
+                                local head = tbl11[1][1]:FindFirstChild("Head")
+
+                                if head and reRegisterHit then
+                                    reRegisterHit:FireServer(head, tbl11, {}, tostring(game.Players.LocalPlayer.UserId):sub(2, 4) .. tostring(coroutine.running()):sub(11, 15))
+                                end
+
+                                if v9 and v10 then
+                                    cloneref(v9):FireServer(string.gsub("RE/RegisterHit", ".", function(arg)
+                                        return string.char(bit32.bxor(string.byte(arg), math.floor(workspace:GetServerTimeNow() / 10 % 10) + 1))
+                                    end), bit32.bxor(v10 + 909090, net.seed:InvokeServer() * 2), head, tbl11)
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+        end
+    end)
+
+    task.spawn(function()
+        local Players2 = game:GetService("Players")
+        local ReplicatedStorage2 = game:GetService("ReplicatedStorage")
+        local localPlayer2 = Players2.LocalPlayer
+        local Net = require(ReplicatedStorage2.Modules.Net)
+        local CombatUtil = require(ReplicatedStorage2.Modules.CombatUtil)
+        local RegisterHit = Net:RemoteEvent("RegisterHit")
+        local reRegisterAttack = ReplicatedStorage2.Modules.Net:FindFirstChild("RE/RegisterAttack")
+
+        local function fn72(arg)
+            local character = localPlayer2.Character
+            if not character then
+                return
+            end
+            local humanoidRootPart = arg:FindFirstChild("HumanoidRootPart")
+            local humanoid = arg:FindFirstChild("Humanoid")
+            if not humanoidRootPart or not humanoid or humanoid.Health <= 0 then
+                return
+            end
+            local tool = character:FindFirstChildOfClass("Tool")
+            if not tool then
+                return
+            end
+
+            pcall(function()
+                local weaponName = CombatUtil:GetWeaponName(tool)
+                local str3 = tostring(localPlayer2.UserId):sub(2, 4) .. tostring(math.random(10000, 99999))
+                RegisterHit:FireServer(humanoidRootPart, {{arg, humanoidRootPart}}, nil, nil, str3)
+                CombatUtil:ApplyDamageHighlight(arg, character, weaponName, humanoidRootPart, nil)
+            end)
+        end
+
+        local function fn73(arg)
+            local character = localPlayer2.Character
+            if not character or not character:FindFirstChild("HumanoidRootPart") then
+                return {}
+            end
+            local humanoidRootPart = character.HumanoidRootPart
+            local tbl11 = {}
+            local enemies = workspace:FindFirstChild("Enemies")
+
+            if enemies then
+                for i, child in ipairs(enemies:GetChildren()) do
+                    local humanoidRootPart2 = child:FindFirstChild("HumanoidRootPart")
+                    local humanoid = child:FindFirstChild("Humanoid")
+
+                    if humanoidRootPart2 and humanoid and humanoid.Health > 0 then
+                        local magnitude = (humanoidRootPart2.Position - humanoidRootPart.Position).Magnitude
+                        local n7 = arg or 60
+
+                        if magnitude <= n7 then
+                            table.insert(tbl11, child)
+                        end
+                    end
+                end
+            end
+
+            return tbl11
+        end
+
+        while task.wait() do
+            if _G.at or _G.FastAttack then
+                pcall(function()
+                    local character = localPlayer2.Character
+
+                    if character and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
+                        local v12 = fn73(60)
+
+                        if #v12 > 0 then
+                            if reRegisterAttack then
+                                reRegisterAttack:FireServer()
+                            end
