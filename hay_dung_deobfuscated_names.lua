@@ -311,7 +311,7 @@ tabs.Main:AddDropdown({
 		"Normal",
 		"Big"
 	},
-	Default = "Normal",
+	Default = "small",
 	Callback = function(selectedUIScale)
 		mainWindow:SetUIScale(({
 			Small = 0.8,
