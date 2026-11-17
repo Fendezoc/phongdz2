@@ -291,6 +291,966 @@ spawn(function()
 		end)
 	end
 end)
+do
+	pcall(function()
+		if not isfolder("Banana Cat Hub") then
+			makefolder("Banana Cat Hub")
+		end
+	end)
+
+	tabs.Info:AddSection("Server")
+	-- Cầu nối để giữ nguyên code Banana: SectionServer.CreateButton -> tabs.Info:AddButton
+	local SectionServer = {
+		CreateButton = function(opts, callback)
+			tabs.Info:AddButton({ Name = opts.Title, Callback = callback })
+		end,
+	}
+
+	SectionServer.CreateButton({ Title = "Open Gui Server Browser (Low Player and Ping)" }, function()
+		local G = game:GetService("HttpService")
+		game:GetService("TeleportService")
+		local f, K = game:GetService("Players"), game:GetService("TweenService")
+		local R, R, m = f.LocalPlayer, game.PlaceId, syn and syn.request or http_request or request
+		if not m then
+			warn("[ServerBrowser] Executor does not support http_request")
+			return
+		end
+		if game.CoreGui:FindFirstChild("SB_UI") then
+			game.CoreGui.SB_UI:Destroy()
+		end
+		local E, l, Q =
+			{ servers = {}, cursor = nil, finished = false, lastUpdate = 0, pages = 0 },
+			{
+				CACHE_TIME = 60,
+				MAX_SHOW = 50,
+				PAGE_DELAY = 5,
+				RETRY_MAX = 4,
+				RETRY_BASE = 2,
+				RETRY_JITTER = 5,
+				RATE_COOLDOWN = 30,
+			},
+			{
+				BG = Color3.fromRGB(10, 11, 16),
+				SURFACE = Color3.fromRGB(13, 14, 20),
+				ROW = Color3.fromRGB(16, 17, 26),
+				ROW_HOVER = Color3.fromRGB(20, 22, 35),
+				ROW_TOP = Color3.fromRGB(10, 22, 34),
+				BORDER = Color3.fromRGB(28, 31, 48),
+				BORDER_HOV = Color3.fromRGB(0, 80, 120),
+				CYAN = Color3.fromRGB(0, 212, 255),
+				CYAN_DIM = Color3.fromRGB(0, 80, 120),
+				GREEN = Color3.fromRGB(0, 204, 102),
+				GREEN_GLOW = Color3.fromRGB(0, 255, 136),
+				AMBER = Color3.fromRGB(255, 170, 0),
+				RED = Color3.fromRGB(255, 68, 85),
+				TEXT_PRI = Color3.fromRGB(232, 234, 240),
+				TEXT_SEC = Color3.fromRGB(80, 90, 120),
+				TEXT_DIM = Color3.fromRGB(45, 52, 82),
+			}
+		local function S(L, d, I)
+			local _ = Instance.new(L)
+			for L, o in pairs(d or {}) do
+				_[L] = o
+			end
+			if I then
+				_.Parent = I
+			end
+			return _
+		end
+		local function L(d, I)
+			return S("UICorner", { CornerRadius = UDim.new(0, d) }, I)
+		end
+		local function d(I, _, o, V)
+			return S("UIStroke", { Thickness = I, Color = _, Transparency = o or 0 }, V)
+		end
+		local function I(_, o, V, N, y)
+			K:Create(_, TweenInfo.new(V or 0.15, N or Enum.EasingStyle.Quad, y or Enum.EasingDirection.Out), o):Play()
+		end
+		local function K(_, o, V)
+			_.MouseEnter:Connect(function()
+				I(_, { BackgroundColor3 = V })
+			end)
+			_.MouseLeave:Connect(function()
+				I(_, { BackgroundColor3 = o })
+			end)
+		end
+		local function _()
+			return math.random() * l.RETRY_JITTER
+		end
+		local o = S(
+			"ScreenGui",
+			{ Name = "SB_UI", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, IgnoreGuiInset = true },
+			game.CoreGui
+		)
+		local V = S(
+			"Frame",
+			{
+				Name = "Window",
+				Size = UDim2.new(0, 580, 0, 500),
+				Position = UDim2.new(0.5, -290, 0.5, -250),
+				BackgroundColor3 = Q.SURFACE,
+				BorderSizePixel = 0,
+				ClipsDescendants = true,
+			},
+			o
+		)
+		L(4, V)
+		d(1, Q.BORDER, 0, V)
+		do
+			local N, y, x
+			V.InputBegan:Connect(function(k)
+				if k.UserInputType == Enum.UserInputType.MouseButton1 then
+					N = true
+					y = k.Position
+					x = V.Position
+				end
+			end)
+			V.InputEnded:Connect(function(k)
+				local P, e = k.UserInputType, Enum.UserInputType.MouseButton1
+				if P == e then
+					N = false
+				end
+			end)
+			game:GetService("UserInputService").InputChanged:Connect(function(k)
+				if N and k.UserInputType == Enum.UserInputType.MouseMovement then
+					local N = k.Position - y
+					V.Position = UDim2.new(x.X.Scale, x.X.Offset + N.X, x.Y.Scale, x.Y.Offset + N.Y)
+				end
+			end)
+		end
+		f = S("Frame", { Size = UDim2.new(1, 0, 0, 52), BackgroundColor3 = Q.BG, BorderSizePixel = 0 }, V)
+		S(
+			"TextLabel",
+			{
+				Size = UDim2.new(0, 300, 0, 18),
+				Position = UDim2.new(0, 18, 0, 9),
+				BackgroundTransparency = 1,
+				Text = "SERVER BROWSER",
+				TextColor3 = Q.TEXT_PRI,
+				Font = Enum.Font.GothamBold,
+				TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			},
+			f
+		)
+		S(
+			"TextLabel",
+			{
+				Size = UDim2.new(0, 360, 0, 14),
+				Position = UDim2.new(0, 18, 0, 30),
+				BackgroundTransparency = 1,
+				Text = "CACHE PAGE \194\183 LOAD MORE \194\183 LOWEST PLAYER / PING",
+				TextColor3 = Q.TEXT_DIM,
+				Font = Enum.Font.Gotham,
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			},
+			f
+		)
+		local N = S(
+			"TextButton",
+			{
+				Size = UDim2.new(0, 28, 0, 28),
+				Position = UDim2.new(1, -42, 0, 12),
+				BackgroundColor3 = Color3.fromRGB(26, 13, 13),
+				BorderSizePixel = 0,
+				Text = "X",
+				TextColor3 = Q.RED,
+				Font = Enum.Font.GothamBold,
+				TextSize = 11,
+			},
+			f
+		)
+		L(3, N)
+		K(N, Color3.fromRGB(26, 13, 13), Color3.fromRGB(60, 20, 20))
+		N.MouseButton1Click:Connect(function()
+			o:Destroy()
+		end)
+		f = S(
+			"Frame",
+			{
+				Size = UDim2.new(1, 0, 0, 42),
+				Position = UDim2.new(0, 0, 0, 52),
+				BackgroundColor3 = Color3.fromRGB(11, 12, 17),
+				BorderSizePixel = 0,
+			},
+			V
+		)
+		local o = S(
+			"Frame",
+			{
+				Size = UDim2.new(0, 6, 0, 6),
+				Position = UDim2.new(0, 14, 0.5, -3),
+				BackgroundColor3 = Q.TEXT_DIM,
+				BorderSizePixel = 0,
+			},
+			f
+		)
+		L(99, o)
+		local N, y =
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(1, -300, 1, 0),
+					Position = UDim2.new(0, 26, 0, 0),
+					BackgroundTransparency = 1,
+					Text = "READY",
+					TextColor3 = Q.TEXT_SEC,
+					Font = Enum.Font.Gotham,
+					TextSize = 11,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				f
+			),
+			S(
+				"TextButton",
+				{
+					Size = UDim2.new(0, 82, 0, 26),
+					Position = UDim2.new(1, -270, 0.5, -13),
+					BackgroundColor3 = Color3.fromRGB(14, 22, 40),
+					BorderSizePixel = 0,
+					Text = "REFRESH",
+					TextColor3 = Color3.fromRGB(100, 140, 200),
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+				},
+				f
+			)
+		L(3, y)
+		K(y, Color3.fromRGB(14, 22, 40), Color3.fromRGB(10, 30, 55))
+		local x = S(
+			"TextButton",
+			{
+				Size = UDim2.new(0, 82, 0, 26),
+				Position = UDim2.new(1, -182, 0.5, -13),
+				BackgroundColor3 = Color3.fromRGB(16, 32, 24),
+				BorderSizePixel = 0,
+				Text = "LOAD MORE",
+				TextColor3 = Q.GREEN,
+				Font = Enum.Font.GothamBold,
+				TextSize = 10,
+			},
+			f
+		)
+		L(3, x)
+		K(x, Color3.fromRGB(16, 32, 24), Color3.fromRGB(10, 48, 28))
+		local k = S(
+			"TextButton",
+			{
+				Size = UDim2.new(0, 82, 0, 26),
+				Position = UDim2.new(1, -94, 0.5, -13),
+				BackgroundColor3 = Color3.fromRGB(38, 18, 18),
+				BorderSizePixel = 0,
+				Text = "RESET",
+				TextColor3 = Q.RED,
+				Font = Enum.Font.GothamBold,
+				TextSize = 10,
+			},
+			f
+		)
+		L(3, k)
+		K(k, Color3.fromRGB(38, 18, 18), Color3.fromRGB(60, 20, 20))
+		local P = S(
+			"Frame",
+			{
+				Size = UDim2.new(1, 0, 0, 24),
+				Position = UDim2.new(0, 0, 0, 94),
+				BackgroundColor3 = Color3.fromRGB(11, 12, 17),
+				BorderSizePixel = 0,
+			},
+			V
+		)
+		local function e(Y, H, B)
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0, B, 1, 0),
+					Position = UDim2.new(0, H, 0, 0),
+					BackgroundTransparency = 1,
+					Text = Y,
+					TextColor3 = Q.TEXT_DIM,
+					Font = Enum.Font.GothamBold,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				P
+			)
+		end
+		e("#", 14, 28)
+		e("JOB ID", 42, 170)
+		e("PLAYERS", 220, 80)
+		e("PING", 310, 60)
+		local P = S(
+			"ScrollingFrame",
+			{
+				Size = UDim2.new(1, -8, 1, -172),
+				Position = UDim2.new(0, 4, 0, 118),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				ScrollBarThickness = 3,
+				ScrollBarImageColor3 = Q.CYAN_DIM,
+				CanvasSize = UDim2.new(0, 0, 0, 0),
+			},
+			V
+		)
+		local e = S("UIListLayout", { Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder }, P)
+		S(
+			"UIPadding",
+			{
+				PaddingTop = UDim.new(0, 6),
+				PaddingLeft = UDim.new(0, 4),
+				PaddingRight = UDim.new(0, 4),
+				PaddingBottom = UDim.new(0, 6),
+			},
+			P
+		)
+		f = S(
+			"Frame",
+			{
+				Size = UDim2.new(1, 0, 0, 30),
+				Position = UDim2.new(0, 0, 1, -30),
+				BackgroundColor3 = Color3.fromRGB(10, 11, 15),
+				BorderSizePixel = 0,
+			},
+			V
+		)
+		local Y, H, B =
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0.5, 0, 1, 0),
+					Position = UDim2.new(0, 14, 0, 0),
+					BackgroundTransparency = 1,
+					Text = "PLACE \194\183 " .. tostring(R),
+					TextColor3 = Q.TEXT_DIM,
+					Font = Enum.Font.Gotham,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				f
+			),
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0.5, -14, 1, 0),
+					Position = UDim2.new(0.5, 0, 0, 0),
+					BackgroundTransparency = 1,
+					Text = "SHOWING 0 / 0",
+					TextColor3 = Q.TEXT_DIM,
+					Font = Enum.Font.Gotham,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Right,
+				},
+				f
+			),
+			S(
+				"Frame",
+				{
+					Size = UDim2.new(1, 0, 1, -52),
+					Position = UDim2.new(0, 0, 0, 52),
+					BackgroundColor3 = Q.SURFACE,
+					BackgroundTransparency = 0.05,
+					ZIndex = 20,
+					Visible = false,
+				},
+				V
+			)
+		local f, Z =
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(1, -20, 0, 36),
+					Position = UDim2.new(0, 10, 0.5, 10),
+					BackgroundTransparency = 1,
+					Text = "SCANNING SERVERS...",
+					TextColor3 = Q.CYAN,
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Center,
+					TextWrapped = true,
+					ZIndex = 21,
+				},
+				B
+			),
+			S(
+				"Frame",
+				{
+					Size = UDim2.new(1, -8, 0, 28),
+					Position = UDim2.new(0, 4, 0, 118),
+					BackgroundColor3 = Color3.fromRGB(38, 24, 6),
+					BorderSizePixel = 0,
+					ZIndex = 15,
+					Visible = false,
+				},
+				V
+			)
+		L(3, Z)
+		d(1, Q.AMBER, 0.4, Z)
+		local C = S(
+			"TextLabel",
+			{
+				Size = UDim2.new(1, -12, 1, 0),
+				Position = UDim2.new(0, 6, 0, 0),
+				BackgroundTransparency = 1,
+				Text = "\226\143\179 429 RATE LIMITED \226\128\148 WAITING...",
+				TextColor3 = Q.AMBER,
+				Font = Enum.Font.GothamBold,
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				ZIndex = 16,
+			},
+			Z
+		)
+		local function J(F)
+			C.Text = F
+			Z.Visible = true
+			P.Position = UDim2.new(0, 4, 0, 150)
+			P.Size = UDim2.new(1, -8, 1, -204)
+		end
+		local function F()
+			Z.Visible = false
+			P.Position = UDim2.new(0, 4, 0, 118)
+			P.Size = UDim2.new(1, -8, 1, -172)
+		end
+		local q = S(
+			"Frame",
+			{
+				Size = UDim2.new(0, 360, 0, 36),
+				Position = UDim2.new(0.5, -180, 1, -50),
+				BackgroundColor3 = Color3.fromRGB(10, 26, 40),
+				BorderSizePixel = 0,
+				ZIndex = 30,
+				Visible = false,
+			},
+			V
+		)
+		L(3, q)
+		local V = S(
+			"TextLabel",
+			{
+				Size = UDim2.new(1, -12, 1, 0),
+				Position = UDim2.new(0, 6, 0, 0),
+				BackgroundTransparency = 1,
+				Text = "READY",
+				TextColor3 = Q.CYAN,
+				Font = Enum.Font.GothamBold,
+				TextSize = 10,
+				TextWrapped = true,
+				ZIndex = 31,
+			},
+			q
+		)
+		local c
+		local function D(r, n)
+			if c then
+				task.cancel(c)
+			end
+			V.Text = r
+			V.TextColor3 = n or Q.CYAN
+			q.Visible = true
+			c = task.delay(3.5, function()
+				q.Visible = false
+			end)
+		end
+		local function V(q, c)
+			N.Text = q
+			o.BackgroundColor3 = c or Q.TEXT_DIM
+		end
+		local function o(N)
+			return ({
+				RATE_LIMIT = "429 RATE LIMITED \226\128\148 TOO MANY REQUESTS",
+				FORBIDDEN = "403 FORBIDDEN \226\128\148 ACCESS BLOCKED",
+				UNAUTHORIZED = "401 UNAUTHORIZED",
+				SERVER_ERROR = "5xx ROBLOX SERVER ERROR",
+				NETWORK_ERROR = "NETWORK / EXECUTOR ERROR",
+				INVALID_JSON = "INVALID JSON RESPONSE",
+				EMPTY_BODY = "EMPTY RESPONSE BODY",
+			})[N] or "REQUEST FAILED: " .. tostring(N)
+		end
+		local function N(q, c)
+			local r = 0
+			for n = 0, l.RETRY_MAX, 1 do
+				local u, W = pcall(function()
+					return m({
+						Url = q,
+						Method = "GET",
+						Headers = { ["User-Agent"] = "Mozilla/5.0", Accept = "application/json" },
+					})
+				end)
+				if not u or not W then
+					return nil, "NETWORK_ERROR"
+				end
+				u = W.StatusCode or W.Status or 0
+				if u == 429 then
+					r += 1
+					if n >= l.RETRY_MAX then
+						return nil, "RATE_LIMIT"
+					end
+					local m = if r >= 2 then l.RATE_COOLDOWN + _() else math.pow(l.RETRY_BASE, n + 1) + _()
+					local _ = string.format(
+						"\226\143\179 429 RATE LIMITED \226\128\148 WAITING %.0fs THEN RETRYING (%d/%d)",
+						m,
+						n + 1,
+						l.RETRY_MAX
+					)
+					if c then
+						J(_)
+						B.Visible = false
+					else
+						B.Visible = true
+						f.Text = _
+					end
+					V("RATE LIMITED \226\128\148 WAITING " .. math.floor(m) .. "s", Q.AMBER)
+					D(string.format("\226\143\179 429 \226\128\148 RETRYING IN %.0fs", m), Q.AMBER)
+					warn(
+						string.format(
+							"[ServerBrowser] 429 \226\128\148 waiting %.1fs (attempt %d/%d)",
+							m,
+							n + 1,
+							l.RETRY_MAX
+						)
+					)
+					local _ = math.floor(m)
+					task.spawn(function()
+						while _ > 0 do
+							task.wait(1)
+							_ -= 1
+							local q = string.format(
+								"\226\143\179 429 RATE LIMITED \226\128\148 %.0fs REMAINING (%d/%d)",
+								_,
+								n + 1,
+								l.RETRY_MAX
+							)
+							if c then
+								if Z.Visible then
+									C.Text = q
+								end
+							elseif B.Visible then
+								f.Text = q
+							end
+						end
+					end)
+					task.wait(m)
+					if c then
+						F()
+					end
+					continue
+				end
+				if u == 403 then
+					return nil, "FORBIDDEN"
+				end
+				if u == 401 then
+					return nil, "UNAUTHORIZED"
+				end
+				if u >= 500 then
+					return nil, "SERVER_ERROR"
+				end
+				if u ~= 200 and u ~= 0 then
+					return nil, "HTTP_" .. tostring(u)
+				end
+				if not W.Body or W.Body == "" then
+					return nil, "EMPTY_BODY"
+				end
+				local m, _ = pcall(G.JSONDecode, G, W.Body)
+				if not m or not _ then
+					return nil, "INVALID_JSON"
+				end
+				return _, nil
+			end
+			return nil, "RATE_LIMIT"
+		end
+		local function m()
+			for _, _ in ipairs(P:GetChildren()) do
+				if _:IsA("Frame") then
+					_:Destroy()
+				end
+			end
+		end
+		local function _()
+			table.sort(E.servers, function(Z, C)
+				local q, c = Z.playing or 999, C.playing or 999
+				if q ~= c then
+					return q < c
+				end
+				return (Z.ping or 999) < (C.ping or 999)
+			end)
+		end
+		local function Z(C)
+			if C < 100 then
+				return Q.GREEN_GLOW
+			elseif C < 200 then
+				return Q.AMBER
+			else
+				return Q.RED
+			end
+		end
+		local function C(q)
+			if q > 0.8 then
+				return Q.RED
+			elseif q > 0.5 then
+				return Q.AMBER
+			else
+				return Q.CYAN
+			end
+		end
+		local function q(c, r)
+			local n = r == 1
+			local u = n and Q.ROW_TOP or Q.ROW
+			local W =
+				S("Frame", { Size = UDim2.new(1, 0, 0, 48), BackgroundColor3 = u, BorderSizePixel = 0, LayoutOrder = r }, P)
+			L(3, W)
+			local O = d(1, n and Q.CYAN_DIM or Q.BORDER, 0, W)
+			W.MouseEnter:Connect(function()
+				I(W, { BackgroundColor3 = Q.ROW_HOVER })
+				I(O, { Color = Q.BORDER_HOV })
+			end)
+			W.MouseLeave:Connect(function()
+				I(W, { BackgroundColor3 = u })
+				I(O, { Color = n and Q.CYAN_DIM or Q.BORDER })
+			end)
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0, 28, 1, 0),
+					Position = UDim2.new(0, 10, 0, 0),
+					BackgroundTransparency = 1,
+					Text = string.format("%02d", r),
+					TextColor3 = n and Q.CYAN or Q.TEXT_DIM,
+					Font = Enum.Font.GothamBold,
+					TextSize = 11,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				W
+			)
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0, 160, 0, 14),
+					Position = UDim2.new(0, 44, 0, 8),
+					BackgroundTransparency = 1,
+					Text = tostring(c.id):sub(1, 18) .. "...",
+					TextColor3 = Color3.fromRGB(60, 75, 110),
+					Font = Enum.Font.Code,
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				W
+			)
+			local d, I = c.playing or 0, c.maxPlayers or 20
+			r = d / math.max(I, 1)
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0, 80, 0, 14),
+					Position = UDim2.new(0, 44, 0, 26),
+					BackgroundTransparency = 1,
+					Text = d .. "/" .. I .. " players",
+					TextColor3 = Q.TEXT_DIM,
+					Font = Enum.Font.Gotham,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				W
+			)
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0, 50, 0, 20),
+					Position = UDim2.new(0, 210, 0, 4),
+					BackgroundTransparency = 1,
+					Text = tostring(d),
+					TextColor3 = Q.TEXT_PRI,
+					Font = Enum.Font.GothamBold,
+					TextSize = 15,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				W
+			)
+			d = S(
+				"Frame",
+				{
+					Size = UDim2.new(0, 50, 0, 2),
+					Position = UDim2.new(0, 210, 0, 28),
+					BackgroundColor3 = Color3.fromRGB(22, 24, 36),
+					BorderSizePixel = 0,
+				},
+				W
+			)
+			L(1, d)
+			L(
+				1,
+				S(
+					"Frame",
+					{ Size = UDim2.new(math.clamp(r, 0, 1), 0, 1, 0), BackgroundColor3 = C(r), BorderSizePixel = 0 },
+					d
+				)
+			)
+			d = c.ping or 999
+			S(
+				"TextLabel",
+				{
+					Size = UDim2.new(0, 55, 1, 0),
+					Position = UDim2.new(0, 278, 0, 0),
+					BackgroundTransparency = 1,
+					Text = d .. "ms",
+					TextColor3 = Z(d),
+					Font = Enum.Font.GothamBold,
+					TextSize = 13,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				},
+				W
+			)
+			d = S(
+				"TextButton",
+				{
+					Size = UDim2.new(0, 72, 0, 28),
+					Position = UDim2.new(1, -82, 0.5, -14),
+					BackgroundColor3 = Color3.fromRGB(10, 30, 18),
+					BorderSizePixel = 0,
+					Text = "JOIN",
+					TextColor3 = Q.GREEN,
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+				},
+				W
+			)
+			L(3, d)
+			K(d, Color3.fromRGB(10, 30, 18), Color3.fromRGB(8, 44, 24))
+			d.MouseButton1Click:Connect(function()
+				D("TELEPORTING TO " .. tostring(c.id):sub(1, 16) .. "...", Q.CYAN)
+				local K, S = pcall(function()
+					game:GetService("ReplicatedStorage").__ServerBrowser:InvokeServer("teleport", c.id)
+				end)
+				if not K then
+					D("TELEPORT FAILED: " .. tostring(S), Q.RED)
+					V("TELEPORT FAILED", Q.RED)
+				end
+			end)
+		end
+		local function K()
+			m()
+			_()
+			local S = #E.servers
+			local L = math.min(S, l.MAX_SHOW)
+			for d = 1, L, 1 do
+				q(E.servers[d], d)
+			end
+			P.CanvasSize = UDim2.new(0, 0, 0, e.AbsoluteContentSize.Y + 16)
+			H.Text = "SHOWING " .. L .. " / " .. S
+			Y.Text = "PLACE \194\183 " .. tostring(R) .. " \194\183 PAGE " .. tostring(E.pages)
+			if E.finished then
+				V("CACHE DONE \226\128\148 " .. S .. " SERVERS", Q.GREEN_GLOW)
+			else
+				V("CACHE SAVED \226\128\148 " .. S .. " SERVERS \226\128\148 PAGE " .. E.pages, Q.CYAN)
+			end
+		end
+		local function S()
+			E.servers = {}
+			E.cursor = nil
+			E.finished = false
+			E.lastUpdate = 0
+			E.pages = 0
+			F()
+			m()
+			H.Text = "SHOWING 0 / 0"
+			Y.Text = "PLACE \194\183 " .. tostring(R)
+			V("CACHE RESET", Q.RED)
+			D("CACHE RESET", Q.RED)
+		end
+		local m = false
+		local function L(d, I)
+			if m then
+				return
+			end
+			m = true
+			if I then
+				S()
+			end
+			y.Active = false
+			x.Active = false
+			k.Active = false
+			y.Text = "LOADING"
+			x.Text = "WAIT"
+			local _, P = 0
+			repeat
+				if E.finished then
+					break
+				end
+				_ += 1
+				E.pages = E.pages + 1
+				I = #E.servers > 0
+				if I then
+					B.Visible = false
+				else
+					B.Visible = true
+					f.Text = "SCANNING PAGE " .. E.pages .. "\226\128\166"
+				end
+				V("PAGE " .. E.pages .. " \226\128\148 " .. #E.servers .. " FOUND", Q.AMBER)
+				local e = ("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100"):format(R)
+				local R, Y = N(if E.cursor then e .. "&cursor=" .. G:UrlEncode(E.cursor) else e, I)
+				if not R then
+					e = o(Y)
+					if not I then
+						f.Text = e
+					end
+					V(e, Q.RED)
+					D(e, Q.RED)
+					warn("[ServerBrowser] " .. e .. " | Page: " .. E.pages)
+					P = Y
+					break
+				end
+				for G, G in ipairs(R.data or {}) do
+					if G.id and G.id ~= game.JobId then
+						e, Y = G.playing or 0, G.maxPlayers or 0
+						if Y == 0 or e < Y then
+							table.insert(E.servers, G)
+						end
+					end
+				end
+				E.cursor = R.nextPageCursor
+				E.lastUpdate = tick()
+				if not E.cursor or E.cursor == "" then
+					E.finished = true
+					E.cursor = nil
+				end
+				if not E.finished and _ < d then
+					R = string.format("PAGE %d DONE \226\128\148 WAITING %.1fs\226\128\166", E.pages, l.PAGE_DELAY)
+					if #E.servers > 0 then
+						K()
+						J(R)
+					else
+						f.Text = R
+					end
+					V(R, Q.CYAN)
+					task.wait(l.PAGE_DELAY)
+					F()
+				end
+			until _ >= d
+			B.Visible = false
+			F()
+			K()
+			if P then
+				if #E.servers > 0 then
+					D(o(P) .. " \226\128\148 SHOWING " .. #E.servers .. " CACHED", Q.AMBER)
+					V(o(P) .. " | PARTIAL " .. #E.servers, Q.AMBER)
+				else
+					V(o(P), Q.RED)
+				end
+			elseif E.finished then
+				V("FULL SCAN DONE \226\128\148 " .. #E.servers .. " SERVERS", Q.GREEN_GLOW)
+				D("SCAN COMPLETE \226\128\148 " .. #E.servers .. " SERVERS", Q.GREEN_GLOW)
+			else
+				V("PAGE SAVED \226\128\148 CLICK LOAD MORE TO CONTINUE", Q.CYAN)
+			end
+			y.Active = true
+			x.Active = true
+			k.Active = true
+			y.Text = "REFRESH"
+			x.Text = "LOAD MORE"
+			m = false
+		end
+		y.MouseButton1Click:Connect(function()
+			task.spawn(function()
+				local G = tick() - E.lastUpdate
+				if #E.servers > 0 and G <= l.CACHE_TIME then
+					K()
+					D("CACHE STILL FRESH (" .. math.floor(l.CACHE_TIME - G) .. "s) \226\128\148 RESET TO RELOAD", Q.CYAN)
+					return
+				end
+				L(2, true)
+			end)
+		end)
+		x.MouseButton1Click:Connect(function()
+			task.spawn(function()
+				if E.finished then
+					D("ALL PAGES LOADED \226\128\148 NO MORE SERVERS", Q.AMBER)
+					V("NO MORE PAGES", Q.AMBER)
+					return
+				end
+				L(2, false)
+			end)
+		end)
+		k.MouseButton1Click:Connect(function()
+			if not m then
+				S()
+			end
+		end)
+		task.spawn(function()
+			L(2, true)
+		end)
+	end)
+	function HopLessAll()
+		require(game:GetService("ReplicatedStorage").Notification)
+			.new("<Color=Red>Banana Hub : Hop Server<Color=/>")
+			:Display()
+		local K, R, m, E = game.PlaceId, {}, "", os.date("!*t").hour
+		if
+			not pcall(function()
+				R = game:GetService("HttpService"):JSONDecode(readfile("Banana Cat Hub/NotSameServers.json"))
+			end)
+		then
+			table.insert(R, E)
+			writefile("Banana Cat Hub/NotSameServers.json", game:GetService("HttpService"):JSONEncode(R))
+		end
+		function HopServerLess()
+			local l, Q =
+				if m == ""
+					then (game.HttpService:JSONDecode(
+						game:HttpGet("https://games.roblox.com/v1/games/" .. K .. "/servers/Public?sortOrder=Asc&limit=100")
+					))
+					else (game.HttpService:JSONDecode(
+						game:HttpGet(
+							"https://games.roblox.com/v1/games/"
+								.. K
+								.. "/servers/Public?sortOrder=Asc&limit=100&cursor="
+								.. m
+						)
+					)),
+				""
+			local K = l.nextPageCursor and l.nextPageCursor ~= "null" and l.nextPageCursor ~= nil
+			if K then
+				m = l.nextPageCursor
+			end
+			K = 0
+			for m, S in pairs(l.data) do
+				m = true
+				Q = tostring(S.id)
+				if tonumber(S.maxPlayers) > tonumber(S.playing) and tonumber(S.playing) <= 3 then
+					for l, l in pairs(R) do
+						if K ~= 0 then
+							m = if Q == tostring(l) then false else m
+						elseif tonumber(E) ~= tonumber(l) then
+							pcall(function()
+								delfile("Banana Cat Hub/NotSameServers.json")
+								R = {}
+								table.insert(R, E)
+							end)
+						end
+						K += 1
+					end
+					if m == true then
+						table.insert(R, Q)
+						wait()
+						pcall(function()
+							writefile("Banana Cat Hub/NotSameServers.json", game:GetService("HttpService"):JSONEncode(R))
+							wait()
+							game:GetService("ReplicatedStorage").__ServerBrowser:InvokeServer("teleport", Q)
+							getgenv().limit_type("clearAll")
+						end)
+						wait(4)
+					end
+				end
+			end
+		end
+		while wait() do
+			HopServerLess()
+		end
+	end
+	SectionServer.CreateButton({ Title = "Hop Server Less People" }, function()
+		HopLessAll()
+	end)
+end
+
 WeaponDropdown = tabs.Main:AddDropdown({
 	Name = "Select Weapon",
 	Options = {
@@ -311,7 +1271,7 @@ tabs.Main:AddDropdown({
 		"Normal",
 		"Big"
 	},
-	Default = "small",
+	Default = "Normal",
 	Callback = function(selectedUIScale)
 		mainWindow:SetUIScale(({
 			Small = 0.8,
